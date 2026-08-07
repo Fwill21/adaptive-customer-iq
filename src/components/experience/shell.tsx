@@ -1,0 +1,480 @@
+import { useState, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
+import { NAV, ACTIVITY_RAIL, ADOPTION_SERIES, VALUE_SERIES } from "@/lib/story-data";
+import { OttoMark } from "./primitives";
+import {
+  Activity,
+  Building2,
+  ChevronDown,
+  ClipboardList,
+  Home,
+  Lightbulb,
+  Search,
+  TrendingUp,
+} from "lucide-react";
+
+const NAV_ICONS = [Home, Building2, ClipboardList, Activity, TrendingUp, Lightbulb];
+
+/* ─────────────── Global shell ─────────────── */
+
+export function LeftNav({ active = "Home" }: { active?: string }) {
+  return (
+    <nav
+      aria-label="Primary"
+      className="sticky top-0 hidden h-screen w-[13.5rem] shrink-0 flex-col border-r border-border bg-background px-3 py-5 lg:flex"
+    >
+      <div className="flex items-center gap-2.5 px-2 pb-6">
+        <span className="text-otto">
+          <OttoMark size={18} />
+        </span>
+        <span className="text-[13px] font-semibold tracking-tight">Customer Success</span>
+      </div>
+      <ul className="space-y-0.5">
+        {NAV.map((item, i) => {
+          const Icon = NAV_ICONS[i]!;
+          const on = item === active;
+          return (
+            <li key={item}>
+              <span
+                className={cn(
+                  "flex cursor-default items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] transition-colors",
+                  on
+                    ? "bg-surface font-medium text-foreground shadow-calm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Icon className="size-4 shrink-0" strokeWidth={1.6} aria-hidden="true" />
+                {item}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+      <p className="mt-auto px-2.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+        CSP on AINPX
+      </p>
+    </nav>
+  );
+}
+
+export function TopBar({
+  breadcrumb,
+  person,
+}: {
+  breadcrumb: string[];
+  person: { name: string; role: string };
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-6 py-3 lg:px-10">
+      <ol className="flex items-center gap-2 text-[13px] text-muted-foreground">
+        {breadcrumb.map((b, i) => (
+          <li key={b} className="flex items-center gap-2">
+            {i > 0 && <span className="text-border-strong">/</span>}
+            <span className={i === breadcrumb.length - 1 ? "text-foreground" : undefined}>{b}</span>
+          </li>
+        ))}
+      </ol>
+      <div className="flex items-center gap-4">
+        <span className="hidden items-center gap-2 rounded-lg border border-border bg-surface px-3 py-1.5 text-[13px] text-muted-foreground sm:flex">
+          <Search className="size-3.5" aria-hidden="true" /> Search
+        </span>
+        <span className="text-right text-[12px] leading-tight">
+          {person.name}
+          <br />
+          <span className="text-muted-foreground">{person.role}</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── Surfaces ─────────────── */
+
+export function Surface({
+  children,
+  className,
+  padded = true,
+}: {
+  children: ReactNode;
+  className?: string;
+  padded?: boolean;
+}) {
+  return (
+    <section
+      className={cn(
+        "rounded-2xl border border-border bg-surface shadow-calm",
+        padded && "p-6 md:p-8",
+        className,
+      )}
+    >
+      {children}
+    </section>
+  );
+}
+
+export function SectionTitle({
+  children,
+  meta,
+}: {
+  children: ReactNode;
+  meta?: ReactNode;
+}) {
+  return (
+    <div className="flex flex-wrap items-baseline justify-between gap-3">
+      <h2 className="text-[15px] font-semibold tracking-tight">{children}</h2>
+      {meta && <span className="text-[12px] text-muted-foreground">{meta}</span>}
+    </div>
+  );
+}
+
+export function PageHeading({
+  title,
+  meta,
+  intent,
+}: {
+  title: string;
+  meta?: string;
+  intent?: string;
+}) {
+  return (
+    <header className="rise">
+      <h1 className="text-[1.75rem] font-semibold leading-tight tracking-tight md:text-[2.1rem]">
+        {title}
+      </h1>
+      {meta && <p className="mt-1.5 text-[13px] text-muted-foreground">{meta}</p>}
+      {intent && <p className="mt-4 max-w-2xl text-[15px] leading-relaxed">{intent}</p>}
+    </header>
+  );
+}
+
+export function Tabs({
+  items,
+  value,
+  onChange,
+}: {
+  items: readonly string[];
+  value: string;
+  onChange?: (v: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-1 border-b border-border">
+      {items.map((t) => (
+        <button
+          key={t}
+          type="button"
+          onClick={() => onChange?.(t)}
+          className={cn(
+            "-mb-px border-b-2 px-3 py-2.5 text-[13px] transition-colors",
+            t === value
+              ? "border-otto font-medium text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {t}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ─────────────── Metrics ─────────────── */
+
+export function Kpi({
+  value,
+  label,
+  note,
+  tone = "flat",
+}: {
+  value: string;
+  label: string;
+  note?: string;
+  tone?: "up" | "down" | "flat" | "warn";
+}) {
+  return (
+    <div className="border-l border-border pl-4 first:border-l-0 first:pl-0">
+      <p className="text-[13px] text-muted-foreground">{label}</p>
+      <p className="mt-1.5 text-[1.6rem] font-semibold leading-none tracking-tight">{value}</p>
+      {note && (
+        <p
+          className={cn(
+            "mt-1.5 text-[12px]",
+            tone === "down" && "text-destructive",
+            tone === "up" && "text-human",
+            tone === "warn" && "text-signal",
+            tone === "flat" && "text-muted-foreground",
+          )}
+        >
+          {note}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function ScoreCard({ items }: { items: { value: string; label: string }[] }) {
+  return (
+    <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+      {items.map((i) => (
+        <div key={i.label}>
+          <p className="text-[1.5rem] font-semibold leading-none tracking-tight">{i.value}</p>
+          <p className="mt-1.5 text-[12px] leading-snug text-muted-foreground">{i.label}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function Meter({ value, label }: { value: number; label: string }) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between text-[12px] text-muted-foreground">
+        <span>{label}</span>
+        <span className="text-foreground">{value}%</span>
+      </div>
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+        <div className="h-full rounded-full bg-otto" style={{ width: `${value}%` }} />
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── Progressive disclosure ─────────────── */
+
+export function Disclosure({
+  label,
+  children,
+  tone = "quiet",
+}: {
+  label: string;
+  children: ReactNode;
+  tone?: "quiet" | "agent";
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div
+      className={cn(
+        "rounded-xl border",
+        tone === "agent" ? "border-agent/20 bg-agent-soft" : "border-border bg-background",
+      )}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left text-[13px] font-medium"
+      >
+        {label}
+        <ChevronDown
+          className={cn("size-4 shrink-0 transition-transform", open && "rotate-180")}
+          aria-hidden="true"
+        />
+      </button>
+      {open && <div className="soft-in border-t border-border/70 px-4 py-4 text-[14px]">{children}</div>}
+    </div>
+  );
+}
+
+/* ─────────────── Intelligence activity rail ─────────────── */
+
+export function IntelligenceRail({
+  items = ACTIVITY_RAIL,
+  title = "Customer Intelligence Activity",
+}: {
+  items?: typeof ACTIVITY_RAIL;
+  title?: string;
+}) {
+  return (
+    <Surface className="lg:sticky lg:top-6">
+      <SectionTitle meta="Continuous">{title}</SectionTitle>
+      <ol className="mt-5 space-y-5">
+        {items.map((a, i) => (
+          <li key={a.title} className="relative pl-6">
+            <span className="absolute left-0 top-1.5 size-2 rounded-full bg-otto" />
+            {i < items.length - 1 && (
+              <span className="absolute left-[3.5px] top-4 h-[calc(100%+0.7rem)] w-px bg-border" />
+            )}
+            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+              {a.when}
+            </p>
+            <p className="mt-1 text-[14px] font-medium leading-snug">{a.title}</p>
+            {a.lines.map((l) => (
+              <p key={l} className="mt-1 text-[13px] leading-snug text-muted-foreground">
+                {l}
+              </p>
+            ))}
+          </li>
+        ))}
+      </ol>
+      <p className="mt-6 border-t border-border pt-4 text-[12px] leading-relaxed text-muted-foreground">
+        The environment maintains customer context between moments, not only when prompted.
+      </p>
+    </Surface>
+  );
+}
+
+/* ─────────────── Charts ─────────────── */
+
+const W = 640;
+const H = 200;
+
+function scale(v: number, min: number, max: number) {
+  return H - ((v - min) / (max - min)) * (H - 24) - 12;
+}
+
+function path(values: (number | null)[], min: number, max: number) {
+  const step = W / (values.length - 1);
+  let d = "";
+  values.forEach((v, i) => {
+    if (v == null) return;
+    const x = i * step;
+    const y = scale(v, min, max);
+    d += d === "" ? `M${x} ${y}` : ` L${x} ${y}`;
+  });
+  return d;
+}
+
+export function AdoptionChart() {
+  const { labels, actual, target, projected, divergeIndex } = ADOPTION_SERIES;
+  const min = 55;
+  const max = 95;
+  const step = W / (labels.length - 1);
+  const dx = divergeIndex * step;
+  const dy = scale(actual[divergeIndex]!, min, max);
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center gap-5 text-[12px] text-muted-foreground">
+        <Legend color="bg-primary" label="Actual" />
+        <Legend color="bg-border-strong" label="Target" dashed />
+        <Legend color="bg-signal" label="Projected" dashed />
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="mt-4 h-52 w-full" role="img" aria-label="Strategic adoption trajectory">
+        {[0, 1, 2, 3].map((g) => (
+          <line
+            key={g}
+            x1="0"
+            x2={W}
+            y1={12 + (g * (H - 24)) / 3}
+            y2={12 + (g * (H - 24)) / 3}
+            stroke="var(--color-border)"
+          />
+        ))}
+        <path d={path(target, min, max)} fill="none" stroke="var(--color-border-strong)" strokeWidth="1.5" strokeDasharray="5 5" />
+        <path d={path(projected, min, max)} fill="none" stroke="var(--color-signal)" strokeWidth="1.5" strokeDasharray="3 4" />
+        <path d={path(actual, min, max)} fill="none" stroke="var(--color-primary)" strokeWidth="2.25" />
+        <line x1={dx} x2={dx} y1="8" y2={H - 8} stroke="var(--color-signal)" strokeOpacity="0.5" strokeDasharray="3 3" />
+        <circle cx={dx} cy={dy} r="4.5" fill="var(--color-signal)" />
+      </svg>
+      <div className="flex justify-between font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+        {labels.map((l) => (
+          <span key={l}>{l}</span>
+        ))}
+      </div>
+      <p className="mt-3 text-[13px] text-muted-foreground">
+        <span className="font-medium text-foreground">Week 4 —</span> adoption diverged from target,
+        one day after the deployment configuration change.
+      </p>
+    </div>
+  );
+}
+
+function Legend({ color, label, dashed }: { color: string; label: string; dashed?: boolean }) {
+  return (
+    <span className="flex items-center gap-2">
+      <span className={cn("h-0.5 w-5", color, dashed && "opacity-70")} />
+      {label}
+    </span>
+  );
+}
+
+export function ValueChart() {
+  const { points, marks } = VALUE_SERIES;
+  const min = 0;
+  const max = 2.8;
+  const step = W / (points.length - 1);
+  const line = path(points, min, max);
+  const area = `${line} L${W} ${H - 12} L0 ${H - 12} Z`;
+
+  return (
+    <div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="h-56 w-full" role="img" aria-label="Value realized this quarter">
+        <defs>
+          <linearGradient id="valueFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-otto)" stopOpacity="0.16" />
+            <stop offset="100%" stopColor="var(--color-otto)" stopOpacity="0.01" />
+          </linearGradient>
+        </defs>
+        {[0, 1, 2, 3].map((g) => (
+          <line
+            key={g}
+            x1="0"
+            x2={W}
+            y1={12 + (g * (H - 24)) / 3}
+            y2={12 + (g * (H - 24)) / 3}
+            stroke="var(--color-border)"
+          />
+        ))}
+        <path d={area} fill="url(#valueFill)" />
+        <path d={line} fill="none" stroke="var(--color-otto)" strokeWidth="2.25" />
+        {marks.map((m) => (
+          <circle
+            key={m.label}
+            cx={m.i * step}
+            cy={scale(points[m.i]!, min, max)}
+            r="4"
+            fill="var(--color-surface)"
+            stroke="var(--color-otto)"
+            strokeWidth="2"
+          />
+        ))}
+      </svg>
+      <ol className="mt-5 grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+        {marks.map((m) => (
+          <li key={m.label} className="flex items-baseline gap-2 text-[13px]">
+            <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-otto" />
+            <span className="text-muted-foreground">{m.label}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+/* ─────────────── Otto native input ─────────────── */
+
+export function OttoAsk({ placeholder }: { placeholder: string }) {
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-5 py-4 shadow-calm">
+      <span className="text-otto">
+        <OttoMark size={18} />
+      </span>
+      <span className="min-w-0 flex-1 truncate text-[15px] text-muted-foreground">{placeholder}</span>
+      <span className="hidden font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground sm:inline">
+        Otto
+      </span>
+    </div>
+  );
+}
+
+export function StatusPill({
+  children,
+  tone = "quiet",
+}: {
+  children: ReactNode;
+  tone?: "quiet" | "risk" | "attention" | "positive";
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium",
+        tone === "quiet" && "border-border text-muted-foreground",
+        tone === "risk" && "border-destructive/25 bg-destructive/8 text-destructive",
+        tone === "attention" && "border-signal/30 bg-signal-soft text-signal",
+        tone === "positive" && "border-otto/25 bg-otto-soft text-otto",
+      )}
+    >
+      <span className="size-1.5 rounded-full bg-current" />
+      {children}
+    </span>
+  );
+}
