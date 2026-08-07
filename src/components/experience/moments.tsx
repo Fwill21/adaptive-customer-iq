@@ -320,7 +320,7 @@ export function MomentCoordinate() {
 
 /* ─────────────────────────── Moment 4 ─────────────────────────── */
 
-const BRIEFING = [
+const BRIEFING: [string, string][] = [
   ["What changed", "Wave-2 adoption fell 18% after a form configuration change on 12 August."],
   ["Customer impact", "The wave-2 rollout milestone could slip approximately two weeks."],
   [
