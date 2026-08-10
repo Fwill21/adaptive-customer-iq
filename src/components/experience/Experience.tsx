@@ -35,6 +35,18 @@ import {
 import { PathSelector } from "./PathSelector";
 import { LeftNav, Surface, TopBar } from "./shell";
 import { ActionButton } from "./drawer";
+import {
+  ConversationalWorkspace,
+  HybridStrip,
+  ModeSequenceDemo,
+  ModesOverview,
+  OperatingModelClosing,
+  SameIntelligenceView,
+  UiDrivenNote,
+  WorkModeControl,
+  scriptFor,
+} from "./modes";
+import { MODES_MOMENTS, MODE_CONTEXT_LINE, type ModeId } from "@/lib/mode-data";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const BREADCRUMBS: Record<number, string[]> = {
