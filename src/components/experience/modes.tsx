@@ -829,9 +829,8 @@ export function OperatingModelClosing() {
           </div>
           {info.node}
         </div>
-
-        </div>
       </Surface>
+
 
       <Surface>
         <h2 className="text-balance text-[1.4rem] font-semibold leading-snug tracking-tight md:text-[1.7rem]">
