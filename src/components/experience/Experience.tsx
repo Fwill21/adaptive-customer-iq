@@ -98,7 +98,12 @@ export function Experience() {
     return () => window.removeEventListener("keydown", onKey);
   }, [go]);
 
+  // Every page's breadcrumb starts at Home so the header always offers a way back.
+  const withHome = (crumbs: string[]) =>
+    crumbs[0] === "Home" ? crumbs : ["Home", ...crumbs];
+
   const openPath = (p: PathId) => {
+
     setPath(p);
     setStep(0);
     setRole("CSM");
