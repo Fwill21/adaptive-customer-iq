@@ -277,12 +277,8 @@ export function HybridStrip({
     setValue("");
   };
 
-  const answer =
-    asked && asked.toLowerCase() === script.ask.toLowerCase()
-      ? script.answer
-      : asked
-        ? script.answer
-        : [];
+  const answer = asked ? answerFor(script, asked) : [];
+
 
   return (
     <Surface className="border-otto/25" padded={false}>
