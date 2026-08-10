@@ -306,7 +306,9 @@ export function MomentSomethingChanged({ role }: { role: Role }) {
 /* ── TSM role view ── */
 
 function TsmInvestigation() {
+  const [started, setStarted] = useState(false);
   return (
+
     <div className="space-y-6">
       <PageHeading
         title="Acme Technical Investigation"
