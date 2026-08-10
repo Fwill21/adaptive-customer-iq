@@ -287,6 +287,9 @@ export function Experience() {
                 </span>
               )}
 
+              <WorkModeControl mode={mode} onChange={setMode} disabled={isModes} />
+
+
               <div className="flex items-center rounded-lg border border-border p-0.5">
                 <span className="px-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                   View as
