@@ -273,7 +273,15 @@ export function MomentSomethingChanged({ role }: { role: Role }) {
 
         <IntelligenceRail />
       </div>
+
+      <DetailDrawer
+        detail={drawer.detail}
+        onClose={drawer.close}
+        onConfirm={drawer.confirm}
+        confirmed={drawer.confirmed}
+      />
     </div>
+
   );
 }
 
