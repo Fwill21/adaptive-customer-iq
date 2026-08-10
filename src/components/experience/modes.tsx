@@ -474,8 +474,77 @@ export function ModesOverview() {
   );
 }
 
+function UiDrivenDemo({ script, contextLine }: { script: ModeScript; contextLine: string }) {
+  const [opened, setOpened] = useState<string | null>(null);
+  const g = script.generated;
+  return (
+    <div className="soft-in space-y-4">
+      <UiDrivenNote script={script} contextLine={contextLine} />
+      <div className="rounded-2xl border border-border bg-surface p-5 md:p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <p className="text-[15px] font-semibold tracking-tight">{g.title}</p>
+          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+            Structured view · no conversation required
+          </span>
+        </div>
+        <div className="mt-5 grid gap-5 sm:grid-cols-3">
+          {g.metrics.map((m) => (
+            <div key={m.label} className="rounded-xl border border-border bg-background p-4">
+              <p className="text-[1.3rem] font-semibold leading-none tracking-tight">{m.value}</p>
+              <p className="mt-1.5 text-[12px] leading-snug text-muted-foreground">{m.label}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-5 divide-y divide-border border-t border-border">
+          {[g.connection, ...script.answer].map((row) => (
+            <button
+              key={row}
+              type="button"
+              onClick={() => setOpened(opened === row ? null : row)}
+              className="flex w-full items-start gap-3 py-3.5 text-left text-[14px] leading-relaxed transition-colors hover:text-otto"
+            >
+              <ChevronRight
+                className={cn(
+                  "mt-1 size-3.5 shrink-0 transition-transform",
+                  opened === row && "rotate-90",
+                )}
+                aria-hidden="true"
+              />
+              <span className="min-w-0">
+                {row}
+                {opened === row && (
+                  <span className="mt-2 block text-[12px] text-muted-foreground">
+                    Recommendation surfaced by the monitoring and analysis agents — no question was
+                    asked. {script.uiHint}
+                  </span>
+                )}
+              </span>
+            </button>
+          ))}
+        </div>
+        <div className="mt-5 flex flex-wrap gap-2">
+          {g.actions.map((a, i) => (
+            <ActionButton key={a} variant={i === 0 ? "solid" : "outline"} onClick={() => setOpened(a)}>
+              {a}
+            </ActionButton>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ModeSequenceDemo({ onSetMode }: { onSetMode?: (m: ModeId) => void }) {
-  const [step, setStep] = useState(0);
+  const [active, setActive] = useState<ModeId | null>(null);
+  const script = MODE_SCRIPTS["quarter-1"]!;
+  const contextLine = MODE_CONTEXT_LINE["quarter-1"]!;
+  const activeIndex = active ? MODE_DEMO_SEQUENCE.findIndex((s) => s.mode === active) : -1;
+
+  const start = (m: ModeId) => {
+    setActive(m);
+    onSetMode?.(m);
+  };
+
   return (
     <div className="space-y-6">
       <header className="rise">
@@ -486,41 +555,63 @@ export function ModeSequenceDemo({ onSetMode }: { onSetMode?: (m: ModeId) => voi
       </header>
 
       <Surface>
-        <SectionTitle meta="Context is never reset">Presenter sequence</SectionTitle>
+        <SectionTitle meta="Select a step to run it live">Presenter sequence</SectionTitle>
         <ol className="mt-6 space-y-4">
           {MODE_DEMO_SEQUENCE.map((s, i) => {
-            const on = i <= step;
+            const on = i <= activeIndex;
+            const isActive = active === s.mode;
             return (
-              <li
-                key={s.label}
-                className={cn(
-                  "rounded-xl border p-5 transition-colors",
-                  on ? "border-otto/30 bg-otto-soft/30" : "border-border bg-background",
-                )}
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                      {String(i + 1).padStart(2, "0")}
+              <li key={s.label}>
+                <button
+                  type="button"
+                  aria-pressed={isActive}
+                  onClick={() => start(s.mode)}
+                  className={cn(
+                    "block w-full rounded-xl border p-5 text-left transition-colors",
+                    isActive
+                      ? "border-otto/50 bg-otto-soft/50"
+                      : on
+                        ? "border-otto/30 bg-otto-soft/30"
+                        : "border-border bg-background hover:border-border-strong",
+                  )}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="text-[14px] font-semibold">{s.label}</span>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-[12px] text-muted-foreground">
+                      {isActive ? "Running" : `Run ${s.label} experience`}
+                      <ChevronRight className="size-3.5" aria-hidden="true" />
                     </span>
-                    <span className="text-[14px] font-semibold">{s.label}</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStep(i);
-                      onSetMode?.(s.mode);
-                    }}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-[12px] text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
-                  >
-                    Switch to {s.label}
-                    <ChevronRight className="size-3.5" aria-hidden="true" />
-                  </button>
-                </div>
-                <p className="mt-3 text-[15px] leading-relaxed">{s.line}</p>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">
-                  {s.detail}
-                </p>
+                  <p className="mt-3 text-[15px] leading-relaxed">{s.line}</p>
+                  <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">
+                    {s.detail}
+                  </p>
+                </button>
+
+                {isActive && (
+                  <div className="mt-4 rounded-2xl border border-border bg-background p-4 md:p-5">
+                    <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.12em] text-otto">
+                      Live · {s.label} experience · same Acme context
+                    </p>
+                    {s.mode === "conversational" && (
+                      <ConversationalWorkspace
+                        script={script}
+                        contextLine={contextLine}
+                        momentLabel="Start my quarter"
+                        role="CSM"
+                      />
+                    )}
+                    {s.mode === "ui" && <UiDrivenDemo script={script} contextLine={contextLine} />}
+                    {s.mode === "hybrid" && (
+                      <HybridStrip script={script} contextLine={contextLine} />
+                    )}
+                  </div>
+                )}
               </li>
             );
           })}
@@ -551,6 +642,7 @@ export function ModeSequenceDemo({ onSetMode }: { onSetMode?: (m: ModeId) => voi
     </div>
   );
 }
+
 
 export function SameIntelligenceView() {
   return (
