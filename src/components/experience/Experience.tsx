@@ -125,8 +125,11 @@ export function Experience() {
   return (
     <div className="flex min-h-screen bg-background">
       <LeftNav
-        active={(isQbr ? QBR_NAV_ACTIVE : NAV_ACTIVE)[moment.id] ?? "Home"}
+        active={
+          isModes ? "Insights" : (isQbr ? QBR_NAV_ACTIVE : NAV_ACTIVE)[moment.id] ?? "Home"
+        }
         onNavigate={(item) => {
+          if (isModes) return;
           if (isQbr) {
             const target = QBR_MOMENTS.findIndex((m) => QBR_NAV_ACTIVE[m.id] === item);
             if (target >= 0) setStep(target);
@@ -141,7 +144,11 @@ export function Experience() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar
-          breadcrumb={(isQbr ? QBR_BREADCRUMBS : BREADCRUMBS)[moment.id] ?? ["Home"]}
+          breadcrumb={
+            isModes
+              ? ["Insights", "Three ways to work"]
+              : (isQbr ? QBR_BREADCRUMBS : BREADCRUMBS)[moment.id] ?? ["Home"]
+          }
           person={
             role === "CSM"
               ? { name: "Alex Rivera", role: "CSM · Strategic Enterprise" }
