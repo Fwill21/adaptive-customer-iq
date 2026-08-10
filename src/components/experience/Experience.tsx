@@ -195,12 +195,13 @@ export function Experience() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar
-          breadcrumb={
+          breadcrumb={withHome(
             isModes
               ? ["Insights", "Three ways to work"]
-              : (isQbr ? QBR_BREADCRUMBS : BREADCRUMBS)[moment.id] ?? ["Home"]
-          }
+              : (isQbr ? QBR_BREADCRUMBS : BREADCRUMBS)[moment.id] ?? ["Home"],
+          )}
           onBreadcrumb={navigate}
+
 
           person={
             role === "CSM"
