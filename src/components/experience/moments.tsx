@@ -226,19 +226,34 @@ export function MomentSomethingChanged({ role }: { role: Role }) {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                className="rounded-lg bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground"
+              <ActionButton
+                variant="solid"
+                className="px-4 py-2.5"
+                onClick={() => drawer.open("recommendation", RECOMMENDATION_DETAIL)}
+                done={drawer.isConfirmed("recommendation")}
+                doneLabel="Recommendation approved"
               >
                 Review recommendation
-              </button>
-              <button
-                type="button"
-                className="rounded-lg border border-border px-4 py-2.5 text-[13px] font-medium"
-              >
-                Ask Otto
-              </button>
+              </ActionButton>
+              <ActionButton className="px-4 py-2.5" onClick={() => setAsk((v) => !v)}>
+                {ask ? "Hide Otto" : "Ask Otto"}
+              </ActionButton>
             </div>
+
+            {ask && (
+              <div className="soft-in space-y-3 rounded-xl border border-otto/25 bg-otto-soft px-5 py-4">
+                <span className="eyebrow text-otto">Ask Otto</span>
+                <ul className="space-y-3">
+                  {ASK_OTTO_THREAD.map((t) => (
+                    <li key={t.q}>
+                      <p className="text-[14px] font-medium">{t.q}</p>
+                      <p className="mt-1 text-[14px] leading-relaxed text-muted-foreground">{t.a}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
 
             <Disclosure label="Why does Otto think this?" tone="agent">
               <ul className="space-y-2.5">
