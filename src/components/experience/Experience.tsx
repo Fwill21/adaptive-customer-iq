@@ -98,7 +98,12 @@ export function Experience() {
     return () => window.removeEventListener("keydown", onKey);
   }, [go]);
 
+  // Every page's breadcrumb starts at Home so the header always offers a way back.
+  const withHome = (crumbs: string[]) =>
+    crumbs[0] === "Home" ? crumbs : ["Home", ...crumbs];
+
   const openPath = (p: PathId) => {
+
     setPath(p);
     setStep(0);
     setRole("CSM");
@@ -195,12 +200,13 @@ export function Experience() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar
-          breadcrumb={
+          breadcrumb={withHome(
             isModes
               ? ["Insights", "Three ways to work"]
-              : (isQbr ? QBR_BREADCRUMBS : BREADCRUMBS)[moment.id] ?? ["Home"]
-          }
+              : (isQbr ? QBR_BREADCRUMBS : BREADCRUMBS)[moment.id] ?? ["Home"],
+          )}
           onBreadcrumb={navigate}
+
 
           person={
             role === "CSM"
