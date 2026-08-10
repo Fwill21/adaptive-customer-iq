@@ -452,6 +452,35 @@ export const MODE_FALLBACK_ANSWER = [
   "In the leadership prototype, follow-up answers are illustrative — the interaction model is the point.",
 ];
 
+/* Prompt-specific answers so every suggested question returns its own
+ * substance rather than repeating the moment's headline answer. */
+export const MODE_PROMPT_ANSWERS: Record<string, string[]> = {
+  "How does this environment actually work?": [
+    "Three layers. People choose how they interact, Otto interprets intent and orchestrates, and ten specialized agents do the continuous work underneath.",
+    "Above all of it sits awareness: system, workflow and role — maintained continuously, not reconstructed per session.",
+  ],
+  "Show the operating model": [
+    "Interaction layer: Conversational, UI-Driven and Hybrid — the person's choice, changeable mid-task.",
+    "Orchestration layer: Otto interprets intent, selects agents, synthesizes findings into one recommendation.",
+    "Intelligence layer: ten specialized agents monitoring adoption, deployment, support, value, relationship and risk signals continuously.",
+  ],
+  "What do the agents do?": [
+    "Each agent owns a narrow domain and runs continuously — Adoption watches workflow-level usage, Deployment watches configuration and release history, Support reads ticket themes, Value links outcomes to committed objectives.",
+    "They never present themselves to the user. They hand findings to Otto, which decides what is worth surfacing.",
+    "For Acme this quarter, that is how an 18% adoption decline was traced to one configuration change in under a minute.",
+  ],
+  "What stays human?": [
+    "Every decision that touches the customer. AI detects, analyses, recommends, prepares and coordinates — it does not commit.",
+    "Nothing reaches Acme without explicit confirmation, and every recommendation can be traced back to the signal that produced it.",
+    "Judgment, relationship and commercial framing remain the CSM's work — the environment just removes the reconstruction.",
+  ],
+  "What does the CSM stop doing?": [
+    "Reconstructing context: pulling adoption exports, chasing the TSM for deployment history, rebuilding the quarter before every review.",
+    "Roughly 60% of the time previously spent assembling the picture is returned to the customer conversation.",
+  ],
+};
+
+
 /* ═════════ Leadership presentation content ═════════ */
 
 export const MODES_MOMENTS = [
