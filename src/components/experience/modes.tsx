@@ -28,6 +28,17 @@ export function scriptFor(path: string, momentId: number): ModeScript | undefine
   return MODE_SCRIPTS[`${path}-${momentId}`];
 }
 
+/** Resolve the answer for a question: prompt-specific first, then the
+ * moment's headline answer, then the generic context reminder. */
+function answerFor(script: ModeScript, question: string, allowPrimary = true): string[] {
+  const q = question.trim();
+  const specific = MODE_PROMPT_ANSWERS[q];
+  if (specific) return specific;
+  if (q.toLowerCase() === script.ask.toLowerCase()) return script.answer;
+  return allowPrimary ? script.answer : MODE_FALLBACK_ANSWER;
+}
+
+
 /* ─────────────── Compact work-mode control (presentation) ─────────────── */
 
 export function WorkModeControl({
