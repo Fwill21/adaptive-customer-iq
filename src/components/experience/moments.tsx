@@ -351,12 +351,28 @@ function TsmInvestigation() {
               </p>
             </div>
 
-            <button
-              type="button"
-              className="rounded-lg bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground"
-            >
-              Begin investigation
-            </button>
+            {!started ? (
+              <ActionButton variant="solid" className="px-4 py-2.5" onClick={() => setStarted(true)}>
+                Begin investigation
+              </ActionButton>
+            ) : (
+              <div className="rise space-y-3 border-t border-border pt-6">
+                <span className="eyebrow text-otto">Investigation progress</span>
+                <ul className="space-y-2.5">
+                  {INVESTIGATION_STEPS.map((s, i) => (
+                    <li
+                      key={s}
+                      className="rise flex items-center gap-3 text-[14px]"
+                      style={{ animationDelay: `${i * 110}ms` }}
+                    >
+                      <Check className="size-4 shrink-0 text-otto" aria-hidden="true" />
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
           </Surface>
 
           <p className="text-center text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
