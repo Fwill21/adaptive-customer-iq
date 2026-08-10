@@ -123,16 +123,39 @@ export function Experience() {
   const conversationalOnly = !isModes && mode === "conversational" && !!script;
 
   const navigate = (item: string) => {
-    if (isModes) return;
-    if (isQbr) {
-      const target = QBR_MOMENTS.findIndex((m) => QBR_NAV_ACTIVE[m.id] === item);
-      if (target >= 0) setStep(target);
+    // Home and Insights are global anchors: they always resolve, whichever
+    // path the presenter is currently in.
+    if (item === "Home" || item === "Customer Success") {
+      if (path !== "quarter") setPath("quarter");
+      setStep(0);
       return;
     }
-    const explicit: Record<string, number> = { "Success Plans": 2 };
+    if (item === "Insights") {
+      if (path !== "quarter") {
+        setPath("quarter");
+        setStep(MOMENTS.findIndex((m) => m.id === 6));
+        return;
+      }
+      const insights = MOMENTS.findIndex((m) => NAV_ACTIVE[m.id] === "Insights");
+      if (insights >= 0) setStep(insights);
+      return;
+    }
+    if (isQbr) {
+      const target = QBR_MOMENTS.findIndex((m) => QBR_NAV_ACTIVE[m.id] === item);
+      if (target >= 0) {
+        setStep(target);
+        return;
+      }
+    }
+    // Fall back to the Quarter in Motion map so no nav item is ever a dead end.
+    const explicit: Record<string, number> = { "Success Plans": 2, Meetings: 3 };
     const target = explicit[item] ?? MOMENTS.findIndex((m) => NAV_ACTIVE[m.id] === item);
-    if (target >= 0) setStep(target);
+    if (target >= 0) {
+      if (path !== "quarter") setPath("quarter");
+      setStep(target);
+    }
   };
+
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -150,10 +173,8 @@ export function Experience() {
               ? ["Insights", "Three ways to work"]
               : (isQbr ? QBR_BREADCRUMBS : BREADCRUMBS)[moment.id] ?? ["Home"]
           }
-          onBreadcrumb={(item) => {
-            if (item === "Home" || item === "Customer Success") setStep(0);
-            else navigate(item);
-          }}
+          onBreadcrumb={navigate}
+
           person={
             role === "CSM"
               ? { name: "Alex Rivera", role: "CSM · Strategic Enterprise" }
