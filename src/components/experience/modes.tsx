@@ -95,7 +95,7 @@ function GeneratedView({ script }: { script: ModeScript }) {
         {g.actions.map((a, i) => (
           <ActionButton
             key={a}
-            variant={i === 0 ? "solid" : "quiet"}
+            variant={i === 0 ? "solid" : "outline"}
             onClick={() => setActed(a)}
           >
             {a}
