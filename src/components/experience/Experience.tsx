@@ -151,14 +151,48 @@ export function Experience() {
 
         <main className="flex-1 px-6 pb-32 pt-8 lg:px-10 lg:pt-10">
           <div
-            key={`${path}-${moment.id}-${role}`}
+            key={`${path}-${moment.id}-${role}-${mode}`}
             className={cn(
               "soft-in mx-auto w-full max-w-[80rem]",
               showActivity && activityAvailable && "grid gap-6 lg:grid-cols-[1fr_19rem]",
             )}
           >
             <div className="min-w-0 space-y-6">
-              {isQbr ? (
+              {script && mode === "ui" && (
+                <UiDrivenNote script={script} contextLine={contextLine} />
+              )}
+              {script && mode === "hybrid" && (
+                <HybridStrip script={script} contextLine={contextLine} />
+              )}
+
+              {conversationalOnly && script ? (
+                <ConversationalWorkspace
+                  script={script}
+                  contextLine={contextLine}
+                  momentLabel={moment.label}
+                  role={role}
+                />
+              ) : isModes ? (
+                <>
+                  {step === 0 && <ModesOverview />}
+                  {step === 1 && <ModeSequenceDemo onSetMode={setMode} />}
+                  {step === 2 && <SameIntelligenceView />}
+                  {step === 3 && <OperatingModelClosing />}
+                  {step === 3 && (
+                    <Surface className="flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <p className="text-[15px] font-semibold">See the modes in a real story</p>
+                        <p className="mt-1 text-[13px] text-muted-foreground">
+                          Run Quarter in Motion or the AI-Native QBR in any work mode.
+                        </p>
+                      </div>
+                      <ActionButton variant="solid" onClick={() => openPath("quarter")}>
+                        Open Quarter in Motion
+                      </ActionButton>
+                    </Surface>
+                  )}
+                </>
+              ) : isQbr ? (
                 <>
                   {step === 0 && <QbrApproaching />}
                   {step === 1 && <QbrBuildStory />}
@@ -197,6 +231,7 @@ export function Experience() {
                 </>
               )}
             </div>
+
             {showActivity && activityAvailable && (
               <aside className="rise h-fit">
                 {isQbr ? <QbrAgentChainPanel /> : <AgentChainPanel />}
