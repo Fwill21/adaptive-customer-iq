@@ -151,16 +151,17 @@ export function ConversationalWorkspace({
   const submit = (q: string) => {
     const question = q.trim();
     if (!question) return;
-    const primary = question.toLowerCase() === script.ask.toLowerCase() || turns.length === 0;
+    const primary = turns.length === 0;
     setTurns((t) => [
       ...t,
       {
         q: question,
-        a: primary ? script.answer : MODE_FALLBACK_ANSWER,
+        a: answerFor(script, question, primary),
         generated: true,
       },
     ]);
     setValue("");
+
     inputRef.current?.focus();
   };
 
