@@ -483,18 +483,89 @@ export function ValueChart() {
 /* ─────────────── Otto native input ─────────────── */
 
 export function OttoAsk({ placeholder }: { placeholder: string }) {
+  const [value, setValue] = useState("");
+  const [asked, setAsked] = useState<string | null>(null);
+
+  const submit = (q: string) => {
+    if (!q.trim()) return;
+    setAsked(q.trim());
+    setValue("");
+  };
+
+  const answer = (asked && OTTO_ANSWERS[asked]) || OTTO_FALLBACK;
+
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-5 py-4 shadow-calm">
-      <span className="text-otto">
-        <OttoMark size={18} />
-      </span>
-      <span className="min-w-0 flex-1 truncate text-[15px] text-muted-foreground">{placeholder}</span>
-      <span className="hidden font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground sm:inline">
-        Otto
-      </span>
+    <div className="space-y-3 text-left">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          submit(value);
+        }}
+        className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-5 py-4 shadow-calm focus-within:border-otto/50"
+      >
+        <span className="text-otto">
+          <OttoMark size={18} />
+        </span>
+        <input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={placeholder}
+          aria-label="Ask Otto"
+          className="min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground"
+        />
+        <button
+          type="submit"
+          aria-label="Ask Otto"
+          className="rounded-full bg-primary p-1.5 text-primary-foreground disabled:opacity-35"
+          disabled={!value.trim()}
+        >
+          <ArrowUp className="size-3.5" aria-hidden="true" />
+        </button>
+      </form>
+
+      <div className="flex flex-wrap justify-center gap-2">
+        {OTTO_SUGGESTIONS.map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => submit(s)}
+            className={cn(
+              "rounded-full border px-3 py-1.5 text-[12px] transition-colors",
+              asked === s
+                ? "border-otto/40 bg-otto-soft text-otto"
+                : "border-border text-muted-foreground hover:border-border-strong hover:text-foreground",
+            )}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+
+      {asked && (
+        <div className="soft-in space-y-3 rounded-2xl border border-border bg-surface px-5 py-4 shadow-calm">
+          <div className="flex justify-end">
+            <p className="rounded-2xl rounded-br-sm bg-primary px-4 py-2 text-[13px] text-primary-foreground">
+              {asked}
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <span className="mt-0.5 shrink-0 text-otto">
+              <OttoMark size={16} />
+            </span>
+            <div className="space-y-2">
+              {answer.map((a) => (
+                <p key={a} className="text-[14px] leading-relaxed">
+                  {a}
+                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 
 export function StatusPill({
   children,
