@@ -10,6 +10,8 @@ import {
   MODE_DEMO_CLOSE,
   MODE_DEMO_SEQUENCE,
   MODE_FALLBACK_ANSWER,
+  MODE_PROMPT_ANSWERS,
+
   MODE_SCRIPTS,
   OPERATING_MODEL_FULL,
   SAME_INTELLIGENCE,
@@ -25,6 +27,17 @@ import { ActionButton, useInfoDrawer } from "./drawer";
 export function scriptFor(path: string, momentId: number): ModeScript | undefined {
   return MODE_SCRIPTS[`${path}-${momentId}`];
 }
+
+/** Resolve the answer for a question: prompt-specific first, then the
+ * moment's headline answer, then the generic context reminder. */
+function answerFor(script: ModeScript, question: string, allowPrimary = true): string[] {
+  const q = question.trim();
+  const specific = MODE_PROMPT_ANSWERS[q];
+  if (specific) return specific;
+  if (q.toLowerCase() === script.ask.toLowerCase()) return script.answer;
+  return allowPrimary ? script.answer : MODE_FALLBACK_ANSWER;
+}
+
 
 /* ─────────────── Compact work-mode control (presentation) ─────────────── */
 
@@ -138,16 +151,17 @@ export function ConversationalWorkspace({
   const submit = (q: string) => {
     const question = q.trim();
     if (!question) return;
-    const primary = question.toLowerCase() === script.ask.toLowerCase() || turns.length === 0;
+    const primary = turns.length === 0;
     setTurns((t) => [
       ...t,
       {
         q: question,
-        a: primary ? script.answer : MODE_FALLBACK_ANSWER,
+        a: answerFor(script, question, primary),
         generated: true,
       },
     ]);
     setValue("");
+
     inputRef.current?.focus();
   };
 
@@ -263,12 +277,8 @@ export function HybridStrip({
     setValue("");
   };
 
-  const answer =
-    asked && asked.toLowerCase() === script.ask.toLowerCase()
-      ? script.answer
-      : asked
-        ? script.answer
-        : [];
+  const answer = asked ? answerFor(script, asked) : [];
+
 
   return (
     <Surface className="border-otto/25" padded={false}>
@@ -747,6 +757,7 @@ export function SameIntelligenceView() {
 }
 
 export function OperatingModelClosing() {
+  const info = useInfoDrawer();
   return (
     <div className="space-y-6">
       <header className="rise">
@@ -764,7 +775,36 @@ export function OperatingModelClosing() {
           <div className="mt-6 space-y-3">
             {OPERATING_MODEL_FULL.map((layer, i) => (
               <div key={layer.layer}>
-                <div className="rounded-xl border border-border bg-surface p-4 text-center">
+                <button
+                  type="button"
+                  onClick={() =>
+                    info.open(`model:${layer.layer}`, {
+                      title: layer.layer,
+                      meta: "Operating model layer",
+                      summary:
+                        "Each layer of the operating model is real in the prototype — this is what sits at this level and what it is responsible for.",
+                      sections: [
+                        { label: "What sits here", items: layer.items },
+                        {
+                          label: "Responsibility",
+                          items: [
+                            "Interaction layer: the person chooses how to work, and can change mode mid-task.",
+                            "Orchestration layer: Otto interprets intent, selects agents and synthesizes one recommendation.",
+                            "Intelligence layer: specialized agents monitor continuously and never surface as separate tools.",
+                          ],
+                        },
+                        {
+                          label: "Human control",
+                          items: [
+                            "Nothing reaches the customer without explicit confirmation",
+                            "Every claim traces back to the signal that produced it",
+                          ],
+                        },
+                      ],
+                    })
+                  }
+                  className="w-full rounded-xl border border-border bg-surface p-4 text-center transition-colors hover:border-otto/40"
+                >
                   <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                     {layer.layer}
                   </p>
@@ -778,7 +818,7 @@ export function OperatingModelClosing() {
                       </span>
                     ))}
                   </div>
-                </div>
+                </button>
                 {i < OPERATING_MODEL_FULL.length - 1 && (
                   <p aria-hidden="true" className="py-1 text-center text-[12px] text-muted-foreground">
                     ↓
@@ -787,8 +827,10 @@ export function OperatingModelClosing() {
               </div>
             ))}
           </div>
+          {info.node}
         </div>
       </Surface>
+
 
       <Surface>
         <h2 className="text-balance text-[1.4rem] font-semibold leading-snug tracking-tight md:text-[1.7rem]">
