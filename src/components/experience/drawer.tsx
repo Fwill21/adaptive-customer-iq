@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import type { Detail } from "@/lib/story-data";
 import { OttoMark } from "./primitives";
@@ -75,10 +76,10 @@ export function DetailDrawer({
     return () => window.removeEventListener("keydown", onKey);
   }, [detail, onClose]);
 
-  if (!detail) return null;
+  if (!detail || typeof document === "undefined") return null;
 
-  return (
-    <div className="fixed inset-0 z-40 flex justify-end">
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex justify-end">
       <button
         type="button"
         aria-label="Close panel"
@@ -166,7 +167,8 @@ export function DetailDrawer({
           </div>
         )}
       </aside>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
