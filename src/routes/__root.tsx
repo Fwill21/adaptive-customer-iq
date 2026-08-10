@@ -80,6 +80,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author", content: "Lovable" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { title: "Lovable App" },
+      { property: "og:title", content: "Lovable App" },
+      { name: "twitter:title", content: "Lovable App" },
+      { name: "description", content: "An AI-driven prototype for a future customer success platform, orchestrating specialized agents for proactive customer engagement." },
+      { property: "og:description", content: "An AI-driven prototype for a future customer success platform, orchestrating specialized agents for proactive customer engagement." },
+      { name: "twitter:description", content: "An AI-driven prototype for a future customer success platform, orchestrating specialized agents for proactive customer engagement." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ae9d0c18f68cfe26c3c275d292e9f0e2/id-preview-f780750d--b0b83511-a521-4eea-90f0-f3bd131aa922.lovable.app-1786342762957.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ae9d0c18f68cfe26c3c275d292e9f0e2/id-preview-f780750d--b0b83511-a521-4eea-90f0-f3bd131aa922.lovable.app-1786342762957.png" },
     ],
     links: [
       {
