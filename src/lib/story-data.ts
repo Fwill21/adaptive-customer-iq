@@ -367,3 +367,314 @@ export const AWARENESSES = [
     body: "The environment knows who needs what — TSM needs technical evidence, CSM needs customer strategy, AE needs commercial context.",
   },
 ];
+
+/* ───────── Interactive example data for CTAs ───────── */
+
+export type DetailSection = { label: string; items: string[] };
+export type Detail = { title: string; meta?: string; summary?: string; sections: DetailSection[]; confirm?: string };
+
+export const SITUATION_DETAILS: Record<string, Detail> = {
+  "Acme Corporation": {
+    title: "Adoption risk — Acme Corporation",
+    meta: "Detected today · 9:01 AM · 4 agents contributed",
+    summary:
+      "Strategic adoption declined 18% in the primary deployment group over the past three weeks, ahead of the Q3 executive check-in.",
+    sections: [
+      {
+        label: "Evidence",
+        items: [
+          "Wave-2 deployment group usage: 86% → 68%",
+          "Configuration change applied in release 24.3 on Jul 14",
+          "3 support cases opened in the same window",
+          "Weekly active agents down 412 vs. plan",
+        ],
+      },
+      {
+        label: "Exposed commitments",
+        items: [
+          "Q3 milestone: Global rollout wave 2 (may slip ~2 weeks)",
+          "Executive check-in in 4 days",
+          "$1.1M Q4 expansion discussion",
+        ],
+      },
+      {
+        label: "Otto recommends",
+        items: [
+          "Open a technical investigation with Maya Chen (TSM)",
+          "Share the adoption evidence pack with the account team",
+          "Prepare a recovery conversation before Tuesday",
+        ],
+      },
+    ],
+    confirm: "Accept recommendation",
+  },
+  Globex: {
+    title: "Stakeholder change — Globex Industries",
+    meta: "Detected Friday · 4:22 PM · 3 agents contributed",
+    summary:
+      "A new executive sponsor was identified in the ITSM organisation. The relationship map and success plan need re-alignment this week.",
+    sections: [
+      {
+        label: "What changed",
+        items: [
+          "Priya Raman appointed VP, Service Operations",
+          "Previous sponsor moved to a different business unit",
+          "Two success plan goals were owned by the previous sponsor",
+        ],
+      },
+      {
+        label: "Coverage gaps",
+        items: [
+          "No executive relationship above director level",
+          "Q4 renewal narrative not yet socialised",
+          "Introduction window closes this week",
+        ],
+      },
+      {
+        label: "Otto prepared",
+        items: [
+          "Draft introduction note referencing Globex's stated outcomes",
+          "One-page value summary for the new sponsor",
+          "Suggested 30-minute agenda",
+        ],
+      },
+    ],
+    confirm: "Send outreach draft",
+  },
+  Contoso: {
+    title: "Milestone achieved — Contoso Group",
+    meta: "Confirmed today · 7:40 AM · 3 agents contributed",
+    summary:
+      "Contoso reached its 5,000 active agents adoption target two weeks early — a value moment worth capturing with the sponsor.",
+    sections: [
+      {
+        label: "Result",
+        items: [
+          "5,140 active agents (target 5,000)",
+          "Completed 14 days ahead of plan",
+          "Time-to-value: 71 days vs. 90-day benchmark",
+        ],
+      },
+      {
+        label: "Value evidence",
+        items: [
+          "$480K estimated annual efficiency gain",
+          "Case deflection up 21%",
+          "Two teams ready for the next expansion wave",
+        ],
+      },
+      {
+        label: "Otto prepared",
+        items: [
+          "Value moment summary for the executive sponsor",
+          "Updated success plan status",
+          "Suggested next milestone: automation expansion",
+        ],
+      },
+    ],
+    confirm: "Confirm value moment",
+  },
+};
+
+export const DECISION_DETAILS: Record<string, Detail> = {
+  Acme: {
+    title: "Coordinate technical investigation",
+    meta: "Decision required · Acme Corporation",
+    summary:
+      "Otto has prepared the investigation context. Approving assigns it to the TSM with full customer history attached.",
+    sections: [
+      {
+        label: "Prepared context",
+        items: [
+          "Adoption timeline and divergence point (week 4)",
+          "Release 24.3 configuration diff",
+          "3 related support cases and 1 knowledge article",
+        ],
+      },
+      { label: "Owner", items: ["Maya Chen · Technical Success Manager", "Due before Tuesday 10:00 AM"] },
+    ],
+    confirm: "Assign to Maya Chen",
+  },
+  Globex: {
+    title: "Approve executive sponsor outreach",
+    meta: "Decision required · Globex Industries",
+    summary: "A drafted introduction to Priya Raman is ready for your review before it is sent.",
+    sections: [
+      {
+        label: "Draft highlights",
+        items: [
+          "References Globex's stated service-reliability outcome",
+          "Offers a 30-minute alignment session",
+          "Attaches the one-page Q3 value summary",
+        ],
+      },
+      { label: "Owner", items: ["Alex Rivera · CSM", "Send window closes Friday"] },
+    ],
+    confirm: "Approve and send",
+  },
+  Contoso: {
+    title: "Confirm value milestone",
+    meta: "Decision required · Contoso Group",
+    summary:
+      "Confirming publishes the milestone to the success plan and notifies the account team.",
+    sections: [
+      { label: "Milestone", items: ["5,000 active agents — achieved 14 days early"] },
+      {
+        label: "On confirmation",
+        items: [
+          "Success plan status updated",
+          "Value moment added to the Q3 narrative",
+          "Sponsor summary queued for review",
+        ],
+      },
+    ],
+    confirm: "Confirm milestone",
+  },
+};
+
+export const RECOMMENDATION_DETAIL: Detail = {
+  title: "Otto's recommendation",
+  meta: "Adoption risk · Acme Corporation",
+  summary:
+    "Investigate the configuration change with the Technical Success Manager before Tuesday's customer meeting.",
+  sections: [
+    {
+      label: "Why this action",
+      items: [
+        "The decline began one day after the release 24.3 configuration change",
+        "Similar patterns previously delayed adoption milestones by 2–3 weeks",
+        "A technical root cause is required before the customer conversation",
+      ],
+    },
+    {
+      label: "What happens if you approve",
+      items: [
+        "Investigation created with full customer context",
+        "AE informed of commercial exposure",
+        "Recovery conversation prepared for Tuesday",
+        "Outcome monitoring activated",
+      ],
+    },
+  ],
+  confirm: "Approve recommendation",
+};
+
+export const OTTO_SUGGESTIONS = [
+  "What needs my attention this week?",
+  "Why did Acme adoption decline?",
+  "Prepare me for Tuesday's Acme meeting",
+  "Show Q3 value realized for Acme",
+];
+
+export const OTTO_ANSWERS: Record<string, string[]> = {
+  "What needs my attention this week?": [
+    "Three accounts. Acme is highest priority — strategic adoption fell 18% ahead of an executive check-in in 4 days.",
+    "Globex needs executive sponsor outreach before Friday, and Contoso reached its adoption milestone two weeks early.",
+  ],
+  "Why did Acme adoption decline?": [
+    "Adoption diverged from target in week 4, one day after the release 24.3 deployment configuration change.",
+    "Three support cases were opened in the same window, and the wave-2 group declined faster than the account average.",
+  ],
+  "Prepare me for Tuesday's Acme meeting": [
+    "The briefing is ready: root cause confirmed, remediation complete, milestone moves approximately two weeks.",
+    "I've drafted answers to the three questions the customer is most likely to ask.",
+  ],
+  "Show Q3 value realized for Acme": [
+    "$2.4M estimated realized business value, 4 of 4 success milestones complete, adoption recovered to 91%.",
+    "Three next-quarter opportunities are identified, worth an estimated $1.75M.",
+  ],
+};
+
+export const OTTO_FALLBACK = [
+  "I've assembled what I know across adoption, support, value and success plan signals for this portfolio.",
+  "Acme remains the highest priority this week because of the adoption decline ahead of the executive check-in.",
+];
+
+export const ASK_OTTO_THREAD = [
+  {
+    q: "How confident are you in this?",
+    a: "High. Four agents independently corroborated the decline, and the timing aligns with a specific configuration change.",
+  },
+  {
+    q: "Has this happened before at Acme?",
+    a: "Twice — in Q4 2024 and Q2 2025. Both followed configuration changes and were resolved within three weeks.",
+  },
+  {
+    q: "What happens if we do nothing?",
+    a: "The Q3 adoption milestone slips approximately two weeks and the Q4 expansion discussion loses its adoption evidence.",
+  },
+];
+
+export const INVESTIGATION_STEPS = [
+  "Configuration diff reviewed — release 24.3",
+  "Root cause confirmed: assignment rule scoped to the wrong group",
+  "Remediation applied and validated in the wave-2 group",
+  "Findings added to shared customer context",
+  "Alex Rivera notified for Tuesday's meeting",
+];
+
+export const OPPORTUNITY_DETAILS: Record<string, Detail> = {
+  "Expand advanced workflow adoption": {
+    title: "Expand advanced workflow adoption",
+    meta: "Estimated value $1.1M · Next quarter",
+    summary: "Two additional teams show the usage maturity required for advanced workflow adoption.",
+    sections: [
+      { label: "Signals", items: ["Field Operations: 92% core adoption", "Service Desk EMEA: 88% core adoption", "Advanced feature trials up 3x"] },
+      { label: "Suggested path", items: ["Executive alignment session", "Two-week enablement pilot", "Milestone added to the Q4 success plan"] },
+    ],
+    confirm: "Add to Q4 plan",
+  },
+  "Executive sponsor alignment": {
+    title: "Executive sponsor alignment",
+    meta: "Strategic impact: High · Next quarter",
+    summary: "A new executive stakeholder was identified with influence over the Q4 investment decision.",
+    sections: [
+      { label: "Context", items: ["New VP of Service Operations appointed", "Owns two Q4 success plan goals", "No relationship above director level today"] },
+      { label: "Suggested path", items: ["Value summary shared ahead of introduction", "30-minute alignment session", "Joint Q4 outcome definition"] },
+    ],
+    confirm: "Schedule alignment",
+  },
+  "Automation expansion": {
+    title: "Automation expansion",
+    meta: "Estimated value $650K · Next quarter",
+    summary: "Three high-volume workflows show significant automation potential based on current usage patterns.",
+    sections: [
+      { label: "Candidates", items: ["Access request approvals — 4,200/quarter", "Asset onboarding — 2,600/quarter", "Incident triage routing — 9,100/quarter"] },
+      { label: "Suggested path", items: ["Automation assessment with the BPC", "Business case with baseline metrics", "Pilot on access request approvals"] },
+    ],
+    confirm: "Request assessment",
+  },
+};
+
+export const ACME_TAB_DATA: Record<string, DetailSection[]> = {
+  Overview: [
+    { label: "Account", items: ["Strategic Enterprise · 12,400 employees", "Customer since 2021", "Renewal: Feb 2027 · $4.2M ACV"] },
+    { label: "Team", items: ["Alex Rivera · CSM", "Maya Chen · TSM", "Daniel Brooks · AE"] },
+  ],
+  "Success Plan": [
+    { label: "Q3 goals", items: ["Global rollout wave 2 — at risk", "Reduce case handling time 15% — on track", "Executive value review — scheduled"] },
+    { label: "Completed", items: ["Wave 1 rollout", "Knowledge migration", "Reporting foundation", "Admin enablement"] },
+  ],
+  Adoption: [
+    { label: "By group", items: ["Wave 1: 94%", "Wave 2: 68% (declining)", "Wave 3: not started"] },
+    { label: "Drivers", items: ["Assignment rule misconfiguration", "Reduced training completion in wave 2", "Mobile usage flat"] },
+  ],
+  Value: [
+    { label: "Realized", items: ["$2.4M estimated business value", "Case deflection +18%", "MTTR down 26%"] },
+    { label: "Pending", items: ["Automation expansion business case", "Wave 3 rollout value model"] },
+  ],
+  Risks: [
+    { label: "Open", items: ["Adoption decline in wave 2 — mitigation in progress"] },
+    { label: "Resolved this quarter", items: ["Integration latency (Jun)", "Reporting access gap (Jul)"] },
+  ],
+  Activity: [
+    { label: "Today", items: ["9:01 AM — Adoption decline detected", "9:04 AM — Investigation recommended", "11:42 AM — Root cause confirmed"] },
+    { label: "This week", items: ["Tuesday 10:00 AM — Customer meeting", "Thursday — Executive check-in prep"] },
+  ],
+};
+
+export const SEARCH_RESULTS: DetailSection[] = [
+  { label: "Accounts", items: ["Acme Corporation", "Globex Industries", "Contoso Group"] },
+  { label: "Recent", items: ["Acme adoption trajectory", "Q3 value realized", "Wave 2 rollout milestone"] },
+  { label: "Ask Otto", items: ["What needs my attention this week?", "Which accounts are at risk?"] },
+];
