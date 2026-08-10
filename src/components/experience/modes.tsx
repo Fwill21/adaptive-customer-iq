@@ -20,7 +20,7 @@ import {
 } from "@/lib/mode-data";
 import { OttoMark } from "./primitives";
 import { Disclosure, SectionTitle, StatusPill, Surface } from "./shell";
-import { ActionButton } from "./drawer";
+import { ActionButton, useInfoDrawer } from "./drawer";
 
 export function scriptFor(path: string, momentId: number): ModeScript | undefined {
   return MODE_SCRIPTS[`${path}-${momentId}`];
@@ -378,7 +378,14 @@ export function UiDrivenNote({ script, contextLine }: { script: ModeScript; cont
 
 /* ═════════ Leadership path: Three Ways to Work ═════════ */
 
-export function ModesOverview() {
+export function ModesOverview({
+  mode,
+  onSetMode,
+}: {
+  mode?: ModeId;
+  onSetMode?: (m: ModeId) => void;
+}) {
+  const info = useInfoDrawer();
   return (
     <div className="space-y-6">
       <header className="rise">
@@ -394,13 +401,46 @@ export function ModesOverview() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         {WORK_MODES.map((m) => (
-          <Surface key={m.id}>
+          <Surface
+            key={m.id}
+            className={cn("transition-colors", mode === m.id && "border-otto/40")}
+          >
             <span className="eyebrow">{m.id === "hybrid" ? "Default" : "Mode"}</span>
             <p className="mt-2 text-[1.15rem] font-semibold tracking-tight">{m.label}</p>
             <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground">{m.blurb}</p>
             <p className="mt-4 border-t border-border pt-4 text-[13px] leading-relaxed">
               {MODE_BEHAVIOUR[m.id]}
             </p>
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              <ActionButton
+                variant={mode === m.id ? "solid" : "outline"}
+                onClick={() => onSetMode?.(m.id)}
+              >
+                {mode === m.id ? "Active mode" : `Work in ${m.label}`}
+              </ActionButton>
+              <ActionButton
+                onClick={() =>
+                  info.open(`mode:${m.id}`, {
+                    title: m.label,
+                    meta: "Interaction mode · same environment",
+                    summary: m.blurb,
+                    sections: [
+                      { label: "How Otto behaves", items: [MODE_BEHAVIOUR[m.id]] },
+                      {
+                        label: "What stays the same",
+                        items: [
+                          "Acme Corporation context, role and workflow state",
+                          "The same agents doing the same work underneath",
+                          "Human confirmation before anything reaches the customer",
+                        ],
+                      },
+                    ],
+                  })
+                }
+              >
+                What changes
+              </ActionButton>
+            </div>
           </Surface>
         ))}
       </div>
@@ -457,14 +497,26 @@ export function ModesOverview() {
       <Surface>
         <SectionTitle meta="Situational, not a user profile">Mode choice follows the moment</SectionTitle>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
-          {SITUATIONAL_MODE.map((s) => (
-            <div key={s.when} className="rounded-xl border border-border bg-background p-4">
-              <span className="eyebrow">{s.when}</span>
-              <p className="mt-2 text-[14px] font-medium">{s.mode}</p>
-              <p className="mt-1.5 text-[13px] leading-snug text-muted-foreground">{s.what}</p>
-            </div>
-          ))}
+          {SITUATIONAL_MODE.map((s) => {
+            const target = WORK_MODES.find((m) => s.mode.toLowerCase().includes(m.id))?.id;
+            return (
+              <button
+                key={s.when}
+                type="button"
+                onClick={() => target && onSetMode?.(target)}
+                className="rounded-xl border border-border bg-background p-4 text-left transition-colors hover:border-otto/40"
+              >
+                <span className="eyebrow">{s.when}</span>
+                <p className="mt-2 text-[14px] font-medium">{s.mode}</p>
+                <p className="mt-1.5 text-[13px] leading-snug text-muted-foreground">{s.what}</p>
+                <span className="mt-3 block font-mono text-[10px] uppercase tracking-[0.12em] text-otto">
+                  Switch to this mode
+                </span>
+              </button>
+            );
+          })}
         </div>
+        {info.node}
         <p className="mt-5 text-[13px] text-muted-foreground">
           Nobody is a “conversational user” or a “UI user”. A person moves between modes as the work
           changes.

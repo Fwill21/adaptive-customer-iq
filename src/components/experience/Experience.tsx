@@ -122,24 +122,25 @@ export function Experience() {
     MODE_CONTEXT_LINE[`${path}-${moment.id}`] ?? "Acme Corporation · Q3";
   const conversationalOnly = !isModes && mode === "conversational" && !!script;
 
+  const navigate = (item: string) => {
+    if (isModes) return;
+    if (isQbr) {
+      const target = QBR_MOMENTS.findIndex((m) => QBR_NAV_ACTIVE[m.id] === item);
+      if (target >= 0) setStep(target);
+      return;
+    }
+    const explicit: Record<string, number> = { "Success Plans": 2 };
+    const target = explicit[item] ?? MOMENTS.findIndex((m) => NAV_ACTIVE[m.id] === item);
+    if (target >= 0) setStep(target);
+  };
+
   return (
     <div className="flex min-h-screen bg-background">
       <LeftNav
         active={
           isModes ? "Insights" : (isQbr ? QBR_NAV_ACTIVE : NAV_ACTIVE)[moment.id] ?? "Home"
         }
-        onNavigate={(item) => {
-          if (isModes) return;
-          if (isQbr) {
-            const target = QBR_MOMENTS.findIndex((m) => QBR_NAV_ACTIVE[m.id] === item);
-            if (target >= 0) setStep(target);
-            return;
-          }
-          const explicit: Record<string, number> = { "Success Plans": 2 };
-          const target =
-            explicit[item] ?? MOMENTS.findIndex((m) => NAV_ACTIVE[m.id] === item);
-          if (target >= 0) setStep(target);
-        }}
+        onNavigate={navigate}
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -149,12 +150,17 @@ export function Experience() {
               ? ["Insights", "Three ways to work"]
               : (isQbr ? QBR_BREADCRUMBS : BREADCRUMBS)[moment.id] ?? ["Home"]
           }
+          onBreadcrumb={(item) => {
+            if (item === "Home" || item === "Customer Success") setStep(0);
+            else navigate(item);
+          }}
           person={
             role === "CSM"
               ? { name: "Alex Rivera", role: "CSM · Strategic Enterprise" }
               : { name: "Maya Chen", role: "TSM · Technical Success" }
           }
         />
+
 
         <main className="flex-1 px-6 pb-32 pt-8 lg:px-10 lg:pt-10">
           <div
@@ -181,7 +187,7 @@ export function Experience() {
                 />
               ) : isModes ? (
                 <>
-                  {step === 0 && <ModesOverview />}
+                  {step === 0 && <ModesOverview mode={mode} onSetMode={setMode} />}
                   {step === 1 && <ModeSequenceDemo onSetMode={setMode} />}
                   {step === 2 && <SameIntelligenceView />}
                   {step === 3 && <OperatingModelClosing />}
