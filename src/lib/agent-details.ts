@@ -10,6 +10,56 @@ const AGENT_DOMAINS: Record<string, string[]> = {
     "Holds customer, workflow and role context across moments",
     "Decides what is worth surfacing and what stays in the background",
   ],
+  "Adoption Agent": [
+    "Monitors workflow-level usage per deployment group",
+    "Separates seasonality from real behavioural change",
+    "Flags divergence from committed adoption targets",
+  ],
+  "Customer Health Agent": [
+    "Tracks health trajectory rather than a point-in-time score",
+    "Weighs adoption, support and sponsor engagement together",
+    "Raises direction changes early, while they are still recoverable",
+  ],
+  "Risk Agent": [
+    "Connects change to milestone and timeline exposure",
+    "Quantifies likely slip and mitigation options",
+    "Ranks the portfolio by what is genuinely at risk",
+  ],
+  "Customer Context Agent": [
+    "Correlates support activity with configuration and release history",
+    "Maintains stakeholder history and prior commitments",
+    "Keeps one shared account context for CSM, TSM and AE",
+  ],
+  "Customer Context Intelligence": [
+    "Assembles the full quarter of activity and customer history",
+    "Removes the need to reconstruct the quarter before a review",
+    "Keeps the record consistent for everyone on the account",
+  ],
+  "Success Planning Intelligence": [
+    "Evaluates goals against milestone completion",
+    "Identifies what is complete, slipping or unvalidated",
+    "Feeds the next-quarter plan automatically",
+  ],
+  "Value Intelligence": [
+    "Links outcomes to the customer's stated objectives",
+    "Identifies value evidence that has not yet been validated",
+    "Keeps the value story current throughout the quarter",
+  ],
+  "Risk Intelligence": [
+    "Identifies remaining strategic exposure before the review",
+    "Distinguishes technical noise from business risk",
+    "Prepares mitigation framing for the executive conversation",
+  ],
+  "Meeting Intelligence": [
+    "Reviews previous stakeholder conversations and commitments",
+    "Anticipates sponsor questions and objections",
+    "Prepares a decision-first agenda, not a slide dump",
+  ],
+  "Opportunity Intelligence": [
+    "Identifies credible next-quarter expansion opportunities",
+    "Grounds each one in demonstrated adoption and value",
+    "Hands qualified context to the AE without a manual hand-off",
+  ],
   "Adoption Signal Agent": [
     "Monitors workflow-level usage per deployment group",
     "Separates seasonality from real behavioural change",
