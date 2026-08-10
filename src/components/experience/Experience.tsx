@@ -62,10 +62,13 @@ export function Experience() {
       <LeftNav
         active={NAV_ACTIVE[moment.id] ?? "Home"}
         onNavigate={(item) => {
-          const target = MOMENTS.findIndex((m) => NAV_ACTIVE[m.id] === item);
+          const explicit: Record<string, number> = { "Success Plans": 2 };
+          const target =
+            explicit[item] ?? MOMENTS.findIndex((m) => NAV_ACTIVE[m.id] === item);
           if (target >= 0) setStep(target);
         }}
       />
+
 
 
       <div className="flex min-w-0 flex-1 flex-col">
