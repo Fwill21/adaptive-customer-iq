@@ -127,23 +127,34 @@ export function TopBar({
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-6 py-3 lg:px-10">
       <ol className="flex items-center gap-2 text-[13px] text-muted-foreground">
-        {breadcrumb.map((b, i) => (
-          <li key={b} className="flex items-center gap-2">
-            {i > 0 && <span className="text-border-strong">/</span>}
-            {i === breadcrumb.length - 1 ? (
-              <span className="text-foreground">{b}</span>
-            ) : (
-              <button
-                type="button"
-                onClick={() => onBreadcrumb?.(b)}
-                className="hover:text-foreground"
-              >
-                {b}
-              </button>
-            )}
-          </li>
-        ))}
+        {breadcrumb.map((b, i) => {
+          const isLast = i === breadcrumb.length - 1;
+          // "Home" is a global anchor and stays clickable everywhere, even when
+          // it is the current crumb — any other trailing crumb is static text.
+          const clickable = !isLast || b === "Home";
+          return (
+            <li key={b} className="flex items-center gap-2">
+              {i > 0 && <span className="text-border-strong">/</span>}
+              {clickable ? (
+                <button
+                  type="button"
+                  onClick={() => onBreadcrumb?.(b)}
+                  aria-current={isLast ? "page" : undefined}
+                  className={cn(
+                    "rounded transition-colors hover:text-foreground",
+                    isLast && "font-medium text-foreground",
+                  )}
+                >
+                  {b}
+                </button>
+              ) : (
+                <span className="text-foreground">{b}</span>
+              )}
+            </li>
+          );
+        })}
       </ol>
+
       <div className="flex items-center gap-4">
         <button
           type="button"
