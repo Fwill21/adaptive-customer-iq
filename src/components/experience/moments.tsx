@@ -3,21 +3,29 @@ import { cn } from "@/lib/utils";
 import {
   ACME_METRICS,
   ACME_TABS,
+  ACME_TAB_DATA,
   ADOPTION_EVIDENCE,
   AGENT_CHAIN,
+  ASK_OTTO_THREAD,
   AWARENESSES,
   COORDINATION_CONFIRMED,
   DECISIONS,
+  DECISION_DETAILS,
+  INVESTIGATION_STEPS,
   OPERATING_MODEL,
   OPPORTUNITIES,
+  OPPORTUNITY_DETAILS,
   POST_MEETING,
   POST_MEETING_CONFIRMED,
   QUARTER_SCORECARD,
+  RECOMMENDATION_DETAIL,
   SITUATIONS,
+  SITUATION_DETAILS,
   VALUE_METRICS,
   WORKSTREAMS,
 } from "@/lib/story-data";
 import { OttoMark, OttoVoice, PrimaryAction } from "./primitives";
+import { ActionButton, DetailDrawer, useDrawer } from "./drawer";
 import {
   AdoptionChart,
   Disclosure,
@@ -34,6 +42,7 @@ import {
   ValueChart,
 } from "./shell";
 import { ArrowRight, Check } from "lucide-react";
+
 
 export type Role = "CSM" | "TSM";
 
