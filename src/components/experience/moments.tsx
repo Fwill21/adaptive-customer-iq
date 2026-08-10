@@ -184,7 +184,10 @@ function AcmeHeader({ tab = "Overview" }: { tab?: string }) {
 /* ═════════════════ 02 · Something Changed ═════════════════ */
 
 export function MomentSomethingChanged({ role }: { role: Role }) {
+  const drawer = useDrawer();
+  const [ask, setAsk] = useState(false);
   if (role === "TSM") return <TsmInvestigation />;
+
 
   return (
     <div className="space-y-6">
