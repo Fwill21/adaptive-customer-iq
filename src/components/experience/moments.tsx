@@ -3,21 +3,29 @@ import { cn } from "@/lib/utils";
 import {
   ACME_METRICS,
   ACME_TABS,
+  ACME_TAB_DATA,
   ADOPTION_EVIDENCE,
   AGENT_CHAIN,
+  ASK_OTTO_THREAD,
   AWARENESSES,
   COORDINATION_CONFIRMED,
   DECISIONS,
+  DECISION_DETAILS,
+  INVESTIGATION_STEPS,
   OPERATING_MODEL,
   OPPORTUNITIES,
+  OPPORTUNITY_DETAILS,
   POST_MEETING,
   POST_MEETING_CONFIRMED,
   QUARTER_SCORECARD,
+  RECOMMENDATION_DETAIL,
   SITUATIONS,
+  SITUATION_DETAILS,
   VALUE_METRICS,
   WORKSTREAMS,
 } from "@/lib/story-data";
 import { OttoMark, OttoVoice, PrimaryAction } from "./primitives";
+import { ActionButton, DetailDrawer, useDrawer } from "./drawer";
 import {
   AdoptionChart,
   Disclosure,
@@ -35,11 +43,14 @@ import {
 } from "./shell";
 import { ArrowRight, Check } from "lucide-react";
 
+
 export type Role = "CSM" | "TSM";
 
 /* ═════════════════ 01 · Start My Quarter (Home) ═════════════════ */
 
 export function MomentStartQuarter() {
+  const drawer = useDrawer();
+
   return (
     <div className="space-y-8">
       <div className="mx-auto max-w-3xl space-y-5 pt-2 text-center">
@@ -74,9 +85,13 @@ export function MomentStartQuarter() {
                     Potential impact — {s.impact}
                   </p>
                 </div>
-                <span className="rounded-lg border border-border px-3.5 py-1.5 text-[13px] font-medium">
+                <ActionButton
+                  onClick={() => drawer.open(`situation:${s.account}`, SITUATION_DETAILS[s.account]!)}
+                  done={drawer.isConfirmed(`situation:${s.account}`)}
+                  doneLabel="Actioned"
+                >
                   {s.action}
-                </span>
+                </ActionButton>
               </li>
             ))}
           </ul>
@@ -102,15 +117,27 @@ export function MomentStartQuarter() {
                     </p>
                     <p className="mt-1 text-[14px] leading-snug">{d.task}</p>
                   </div>
-                  <span className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground">
+                  <ActionButton
+                    variant="solid"
+                    onClick={() => drawer.open(`decision:${d.account}`, DECISION_DETAILS[d.account]!)}
+                    done={drawer.isConfirmed(`decision:${d.account}`)}
+                    doneLabel="Confirmed"
+                  >
                     {d.cta}
-                  </span>
+                  </ActionButton>
                 </li>
               ))}
             </ul>
           </Surface>
         </div>
       </div>
+
+      <DetailDrawer
+        detail={drawer.detail}
+        onClose={drawer.close}
+        onConfirm={drawer.confirm}
+        confirmed={drawer.confirmed}
+      />
     </div>
   );
 }
@@ -119,6 +146,7 @@ export function MomentStartQuarter() {
 
 function AcmeHeader({ tab = "Overview" }: { tab?: string }) {
   const [active, setActive] = useState(tab);
+  const extra = active === tab ? null : ACME_TAB_DATA[active];
   return (
     <div className="space-y-6">
       <PageHeading
@@ -127,14 +155,39 @@ function AcmeHeader({ tab = "Overview" }: { tab?: string }) {
         intent="Achieve enterprise adoption goals and demonstrate measurable business value before the Q4 executive review."
       />
       <Tabs items={ACME_TABS} value={active} onChange={setActive} />
+      {extra && (
+        <Surface className="soft-in space-y-6">
+          <SectionTitle meta="Example data">{active}</SectionTitle>
+          <div className="grid gap-6 md:grid-cols-2">
+            {extra.map((s) => (
+              <div key={s.label}>
+                <span className="eyebrow">{s.label}</span>
+                <ul className="mt-3 space-y-2">
+                  {s.items.map((i) => (
+                    <li key={i} className="flex gap-3 text-[14px] leading-snug">
+                      <span className="mt-2 size-1.5 shrink-0 rounded-full bg-agent" />
+                      {i}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <ActionButton onClick={() => setActive(tab)}>Back to {tab}</ActionButton>
+        </Surface>
+      )}
     </div>
   );
 }
 
+
 /* ═════════════════ 02 · Something Changed ═════════════════ */
 
 export function MomentSomethingChanged({ role }: { role: Role }) {
+  const drawer = useDrawer();
+  const [ask, setAsk] = useState(false);
   if (role === "TSM") return <TsmInvestigation />;
+
 
   return (
     <div className="space-y-6">
@@ -176,19 +229,34 @@ export function MomentSomethingChanged({ role }: { role: Role }) {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                className="rounded-lg bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground"
+              <ActionButton
+                variant="solid"
+                className="px-4 py-2.5"
+                onClick={() => drawer.open("recommendation", RECOMMENDATION_DETAIL)}
+                done={drawer.isConfirmed("recommendation")}
+                doneLabel="Recommendation approved"
               >
                 Review recommendation
-              </button>
-              <button
-                type="button"
-                className="rounded-lg border border-border px-4 py-2.5 text-[13px] font-medium"
-              >
-                Ask Otto
-              </button>
+              </ActionButton>
+              <ActionButton className="px-4 py-2.5" onClick={() => setAsk((v) => !v)}>
+                {ask ? "Hide Otto" : "Ask Otto"}
+              </ActionButton>
             </div>
+
+            {ask && (
+              <div className="soft-in space-y-3 rounded-xl border border-otto/25 bg-otto-soft px-5 py-4">
+                <span className="eyebrow text-otto">Ask Otto</span>
+                <ul className="space-y-3">
+                  {ASK_OTTO_THREAD.map((t) => (
+                    <li key={t.q}>
+                      <p className="text-[14px] font-medium">{t.q}</p>
+                      <p className="mt-1 text-[14px] leading-relaxed text-muted-foreground">{t.a}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
 
             <Disclosure label="Why does Otto think this?" tone="agent">
               <ul className="space-y-2.5">
@@ -223,14 +291,24 @@ export function MomentSomethingChanged({ role }: { role: Role }) {
 
         <IntelligenceRail />
       </div>
+
+      <DetailDrawer
+        detail={drawer.detail}
+        onClose={drawer.close}
+        onConfirm={drawer.confirm}
+        confirmed={drawer.confirmed}
+      />
     </div>
+
   );
 }
 
 /* ── TSM role view ── */
 
 function TsmInvestigation() {
+  const [started, setStarted] = useState(false);
   return (
+
     <div className="space-y-6">
       <PageHeading
         title="Acme Technical Investigation"
@@ -275,12 +353,28 @@ function TsmInvestigation() {
               </p>
             </div>
 
-            <button
-              type="button"
-              className="rounded-lg bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground"
-            >
-              Begin investigation
-            </button>
+            {!started ? (
+              <ActionButton variant="solid" className="px-4 py-2.5" onClick={() => setStarted(true)}>
+                Begin investigation
+              </ActionButton>
+            ) : (
+              <div className="rise space-y-3 border-t border-border pt-6">
+                <span className="eyebrow text-otto">Investigation progress</span>
+                <ul className="space-y-2.5">
+                  {INVESTIGATION_STEPS.map((s, i) => (
+                    <li
+                      key={s}
+                      className="rise flex items-center gap-3 text-[14px]"
+                      style={{ animationDelay: `${i * 110}ms` }}
+                    >
+                      <Check className="size-4 shrink-0 text-otto" aria-hidden="true" />
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
           </Surface>
 
           <p className="text-center text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
@@ -503,6 +597,7 @@ export function MomentPrepare({ role }: { role: Role }) {
 /* ═════════════════ 05 · Show the Value ═════════════════ */
 
 export function MomentValue() {
+  const drawer = useDrawer();
   return (
     <div className="space-y-6">
       <PageHeading
@@ -554,6 +649,13 @@ export function MomentValue() {
                     </span>
                   </p>
                   <p className="text-[13px] leading-snug text-muted-foreground">{o.reason}</p>
+                  <ActionButton
+                    onClick={() => drawer.open(`opp:${o.title}`, OPPORTUNITY_DETAILS[o.title]!)}
+                    done={drawer.isConfirmed(`opp:${o.title}`)}
+                    doneLabel="Added to plan"
+                  >
+                    Review opportunity
+                  </ActionButton>
                 </li>
               ))}
             </ul>
@@ -563,7 +665,15 @@ export function MomentValue() {
           </Surface>
         </div>
       </div>
+
+      <DetailDrawer
+        detail={drawer.detail}
+        onClose={drawer.close}
+        onConfirm={drawer.confirm}
+        confirmed={drawer.confirmed}
+      />
     </div>
+
   );
 }
 
