@@ -1,9 +1,20 @@
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { NAV, ACTIVITY_RAIL, ADOPTION_SERIES, VALUE_SERIES } from "@/lib/story-data";
+import {
+  NAV,
+  ACTIVITY_RAIL,
+  ADOPTION_SERIES,
+  VALUE_SERIES,
+  OTTO_SUGGESTIONS,
+  OTTO_ANSWERS,
+  OTTO_FALLBACK,
+  SEARCH_RESULTS,
+} from "@/lib/story-data";
 import { OttoMark } from "./primitives";
+import { DetailDrawer } from "./drawer";
 import {
   Activity,
+  ArrowUp,
   Building2,
   ChevronDown,
   ClipboardList,
@@ -17,7 +28,13 @@ const NAV_ICONS = [Home, Building2, ClipboardList, Activity, TrendingUp, Lightbu
 
 /* ─────────────── Global shell ─────────────── */
 
-export function LeftNav({ active = "Home" }: { active?: string }) {
+export function LeftNav({
+  active = "Home",
+  onNavigate,
+}: {
+  active?: string;
+  onNavigate?: (item: string) => void;
+}) {
   return (
     <nav
       aria-label="Primary"
@@ -35,17 +52,20 @@ export function LeftNav({ active = "Home" }: { active?: string }) {
           const on = item === active;
           return (
             <li key={item}>
-              <span
+              <button
+                type="button"
+                onClick={() => onNavigate?.(item)}
+                aria-current={on ? "page" : undefined}
                 className={cn(
-                  "flex cursor-default items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] transition-colors",
+                  "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors",
                   on
                     ? "bg-surface font-medium text-foreground shadow-calm"
-                    : "text-muted-foreground hover:text-foreground",
+                    : "text-muted-foreground hover:bg-surface hover:text-foreground",
                 )}
               >
                 <Icon className="size-4 shrink-0" strokeWidth={1.6} aria-hidden="true" />
                 {item}
-              </span>
+              </button>
             </li>
           );
         })}
@@ -64,6 +84,7 @@ export function TopBar({
   breadcrumb: string[];
   person: { name: string; role: string };
 }) {
+  const [searchOpen, setSearchOpen] = useState(false);
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-6 py-3 lg:px-10">
       <ol className="flex items-center gap-2 text-[13px] text-muted-foreground">
@@ -75,18 +96,37 @@ export function TopBar({
         ))}
       </ol>
       <div className="flex items-center gap-4">
-        <span className="hidden items-center gap-2 rounded-lg border border-border bg-surface px-3 py-1.5 text-[13px] text-muted-foreground sm:flex">
+        <button
+          type="button"
+          onClick={() => setSearchOpen(true)}
+          className="hidden items-center gap-2 rounded-lg border border-border bg-surface px-3 py-1.5 text-[13px] text-muted-foreground hover:text-foreground sm:flex"
+        >
           <Search className="size-3.5" aria-hidden="true" /> Search
-        </span>
+        </button>
         <span className="text-right text-[12px] leading-tight">
           {person.name}
           <br />
           <span className="text-muted-foreground">{person.role}</span>
         </span>
       </div>
+
+      <DetailDrawer
+        detail={
+          searchOpen
+            ? {
+                title: "Search",
+                meta: "Portfolio · Q3 2026",
+                summary: "Everything Otto currently knows about your portfolio is searchable.",
+                sections: SEARCH_RESULTS,
+              }
+            : null
+        }
+        onClose={() => setSearchOpen(false)}
+      />
     </div>
   );
 }
+
 
 /* ─────────────── Surfaces ─────────────── */
 
