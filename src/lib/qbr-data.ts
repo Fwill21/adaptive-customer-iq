@@ -2,7 +2,7 @@ import type { AgentKey, Detail, DetailSection, Stage } from "./story-data";
 
 /* ═════════ Path model (leadership demo paths) ═════════ */
 
-export type PathId = "quarter" | "qbr";
+export type PathId = "quarter" | "qbr" | "modes";
 
 export const PATHS = [
   {
