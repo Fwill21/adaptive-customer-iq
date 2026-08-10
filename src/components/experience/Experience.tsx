@@ -74,9 +74,12 @@ export function Experience() {
   const [step, setStep] = useState(0);
   const [showActivity, setShowActivity] = useState(false);
   const [role, setRole] = useState<Role>("CSM");
+  // Work mode is how the person interacts. Hybrid best shows the future state.
+  const [mode, setMode] = useState<ModeId>("hybrid");
 
   const isQbr = path === "qbr";
-  const moments = isQbr ? QBR_MOMENTS : MOMENTS;
+  const isModes = path === "modes";
+  const moments = isModes ? MODES_MOMENTS : isQbr ? QBR_MOMENTS : MOMENTS;
   const moment = moments[step] ?? moments[0]!;
 
   const go = useCallback(
@@ -100,16 +103,24 @@ export function Experience() {
     setStep(0);
     setRole("CSM");
     setShowActivity(false);
+    // Mode is deliberately preserved across paths and steps — switching never
+    // resets account, role or workflow context.
   };
 
   if (!path) return <PathSelector onSelect={openPath} />;
 
   const pathMeta = PATHS.find((p) => p.id === path)!;
-  const stages = (isQbr ? QBR_MOMENT_STAGES : MOMENT_STAGES)[moment.id] ?? [];
-  const activityAvailable = isQbr
-    ? moment.id >= 1 && moment.id <= 5
-    : moment.id >= 2 && moment.id <= 5;
-  const roleAvailable = isQbr ? moment.id === 4 || moment.id === 5 : true;
+  const stages = isModes ? [] : (isQbr ? QBR_MOMENT_STAGES : MOMENT_STAGES)[moment.id] ?? [];
+  const activityAvailable = isModes
+    ? false
+    : isQbr
+      ? moment.id >= 1 && moment.id <= 5
+      : moment.id >= 2 && moment.id <= 5;
+  const roleAvailable = isModes ? false : isQbr ? moment.id === 4 || moment.id === 5 : true;
+  const script = isModes ? undefined : scriptFor(path, moment.id);
+  const contextLine =
+    MODE_CONTEXT_LINE[`${path}-${moment.id}`] ?? "Acme Corporation · Q3";
+  const conversationalOnly = !isModes && mode === "conversational" && !!script;
 
   return (
     <div className="flex min-h-screen bg-background">
