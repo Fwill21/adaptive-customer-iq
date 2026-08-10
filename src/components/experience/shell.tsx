@@ -10,8 +10,45 @@ import {
   OTTO_FALLBACK,
   SEARCH_RESULTS,
 } from "@/lib/story-data";
+import type { Detail } from "@/lib/story-data";
 import { OttoMark } from "./primitives";
-import { DetailDrawer } from "./drawer";
+import { DetailDrawer, useDrawer } from "./drawer";
+
+/** Every metric in the environment is explainable — Otto can always show its reasoning. */
+export function metricDetail(label: string, value: string, note?: string): Detail {
+  return {
+    title: label,
+    meta: `Acme Corporation · Q3 2026 · ${value}`,
+    summary: `Otto assembled ${label.toLowerCase()} (${value}) from live product telemetry, workflow records and account history — refreshed continuously, not at reporting time.`,
+    sections: [
+      {
+        label: "How Otto calculates this",
+        items: [
+          `Current reading: ${value}${note ? ` (${note})` : ""}`,
+          "Source: product usage events, deployment records, support and workflow history",
+          "Refreshed continuously as new signals arrive from the environment",
+        ],
+      },
+      {
+        label: "Contributing agents",
+        items: [
+          "Adoption Signal Agent — usage pattern and workflow-level movement",
+          "Deployment Health Agent — configuration and release correlation",
+          "Value Realization Agent — links movement to committed business outcomes",
+        ],
+      },
+      {
+        label: "What this changes",
+        items: [
+          "Feeds the prioritized situations on your home surface",
+          "Included automatically in the customer value story",
+          "Shared context — the same reading is visible to CSM, TSM and AE",
+        ],
+      },
+    ],
+    confirm: "Add to the customer value story",
+  };
+}
 import {
   Activity,
   ArrowUp,
@@ -80,9 +117,11 @@ export function LeftNav({
 export function TopBar({
   breadcrumb,
   person,
+  onBreadcrumb,
 }: {
   breadcrumb: string[];
   person: { name: string; role: string };
+  onBreadcrumb?: (item: string) => void;
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
   return (
@@ -91,7 +130,17 @@ export function TopBar({
         {breadcrumb.map((b, i) => (
           <li key={b} className="flex items-center gap-2">
             {i > 0 && <span className="text-border-strong">/</span>}
-            <span className={i === breadcrumb.length - 1 ? "text-foreground" : undefined}>{b}</span>
+            {i === breadcrumb.length - 1 ? (
+              <span className="text-foreground">{b}</span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onBreadcrumb?.(b)}
+                className="hover:text-foreground"
+              >
+                {b}
+              </button>
+            )}
           </li>
         ))}
       </ol>
@@ -224,56 +273,102 @@ export function Kpi({
   label,
   note,
   tone = "flat",
+  detail,
 }: {
   value: string;
   label: string;
   note?: string;
   tone?: "up" | "down" | "flat" | "warn";
+  detail?: Detail;
 }) {
+  const drawer = useDrawer();
+  const d = detail ?? metricDetail(label, value, note);
   return (
     <div className="border-l border-border pl-4 first:border-l-0 first:pl-0">
-      <p className="text-[13px] text-muted-foreground">{label}</p>
-      <p className="mt-1.5 text-[1.6rem] font-semibold leading-none tracking-tight">{value}</p>
-      {note && (
-        <p
-          className={cn(
-            "mt-1.5 text-[12px]",
-            tone === "down" && "text-destructive",
-            tone === "up" && "text-human",
-            tone === "warn" && "text-signal",
-            tone === "flat" && "text-muted-foreground",
-          )}
-        >
-          {note}
-        </p>
-      )}
+      <button
+        type="button"
+        onClick={() => drawer.open(`kpi:${label}`, d)}
+        className="group w-full text-left"
+      >
+        <p className="text-[13px] text-muted-foreground group-hover:text-foreground">{label}</p>
+        <p className="mt-1.5 text-[1.6rem] font-semibold leading-none tracking-tight">{value}</p>
+        {note && (
+          <p
+            className={cn(
+              "mt-1.5 text-[12px]",
+              tone === "down" && "text-destructive",
+              tone === "up" && "text-human",
+              tone === "warn" && "text-signal",
+              tone === "flat" && "text-muted-foreground",
+            )}
+          >
+            {note}
+          </p>
+        )}
+        <span className="mt-1.5 block font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
+          How Otto knows
+        </span>
+      </button>
+      <DetailDrawer
+        detail={drawer.detail}
+        onClose={drawer.close}
+        onConfirm={drawer.confirm}
+        confirmed={drawer.confirmed}
+      />
     </div>
   );
 }
 
 export function ScoreCard({ items }: { items: { value: string; label: string }[] }) {
+  const drawer = useDrawer();
   return (
     <div className="grid grid-cols-2 gap-x-6 gap-y-6">
       {items.map((i) => (
-        <div key={i.label}>
+        <button
+          key={i.label}
+          type="button"
+          onClick={() => drawer.open(`score:${i.label}`, metricDetail(i.label, i.value))}
+          className="group text-left"
+        >
           <p className="text-[1.5rem] font-semibold leading-none tracking-tight">{i.value}</p>
-          <p className="mt-1.5 text-[12px] leading-snug text-muted-foreground">{i.label}</p>
-        </div>
+          <p className="mt-1.5 text-[12px] leading-snug text-muted-foreground group-hover:text-foreground">
+            {i.label}
+          </p>
+        </button>
       ))}
+      <DetailDrawer
+        detail={drawer.detail}
+        onClose={drawer.close}
+        onConfirm={drawer.confirm}
+        confirmed={drawer.confirmed}
+      />
     </div>
   );
 }
 
 export function Meter({ value, label }: { value: number; label: string }) {
+  const drawer = useDrawer();
   return (
     <div>
-      <div className="flex items-baseline justify-between text-[12px] text-muted-foreground">
-        <span>{label}</span>
-        <span className="text-foreground">{value}%</span>
-      </div>
-      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-        <div className="h-full rounded-full bg-otto" style={{ width: `${value}%` }} />
-      </div>
+      <button
+        type="button"
+        onClick={() => drawer.open(`meter:${label}`, metricDetail(label, `${value}%`))}
+        className="group w-full text-left"
+      >
+        <div className="flex items-baseline justify-between text-[12px] text-muted-foreground">
+          <span className="group-hover:text-foreground">{label}</span>
+          <span className="text-foreground">{value}%</span>
+        </div>
+        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+          <div className="h-full rounded-full bg-otto" style={{ width: `${value}%` }} />
+        </div>
+      </button>
+      <DetailDrawer
+        detail={drawer.detail}
+        onClose={drawer.close}
+        onConfirm={drawer.confirm}
+        confirmed={drawer.confirmed}
+      />
     </div>
   );
 }
@@ -323,6 +418,7 @@ export function IntelligenceRail({
   items?: typeof ACTIVITY_RAIL;
   title?: string;
 }) {
+  const drawer = useDrawer();
   return (
     <Surface className="lg:sticky lg:top-6">
       <SectionTitle meta="Continuous">{title}</SectionTitle>
@@ -333,21 +429,54 @@ export function IntelligenceRail({
             {i < items.length - 1 && (
               <span className="absolute left-[3.5px] top-4 h-[calc(100%+0.7rem)] w-px bg-border" />
             )}
-            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-              {a.when}
-            </p>
-            <p className="mt-1 text-[14px] font-medium leading-snug">{a.title}</p>
-            {a.lines.map((l) => (
-              <p key={l} className="mt-1 text-[13px] leading-snug text-muted-foreground">
-                {l}
+            <button
+              type="button"
+              onClick={() =>
+                drawer.open(`activity:${a.title}`, {
+                  title: a.title,
+                  meta: `${a.when} · Continuous intelligence`,
+                  summary:
+                    "This ran without being asked. Otto keeps working the account between your moments and only surfaces what changes a decision.",
+                  sections: [
+                    { label: "What the agent observed", items: [...a.lines] },
+                    {
+                      label: "Where it went",
+                      items: [
+                        "Written into the shared Acme Corporation context",
+                        "Visible to CSM, TSM and AE without hand-off",
+                        "Carried forward into the quarterly value story",
+                      ],
+                    },
+                  ],
+                  confirm: "Acknowledge and keep monitoring",
+                })
+              }
+              className="group w-full text-left"
+            >
+              <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                {a.when}
               </p>
-            ))}
+              <p className="mt-1 text-[14px] font-medium leading-snug group-hover:text-otto">
+                {a.title}
+              </p>
+              {a.lines.map((l) => (
+                <p key={l} className="mt-1 text-[13px] leading-snug text-muted-foreground">
+                  {l}
+                </p>
+              ))}
+            </button>
           </li>
         ))}
       </ol>
       <p className="mt-6 border-t border-border pt-4 text-[12px] leading-relaxed text-muted-foreground">
         The environment maintains customer context between moments, not only when prompted.
       </p>
+      <DetailDrawer
+        detail={drawer.detail}
+        onClose={drawer.close}
+        onConfirm={drawer.confirm}
+        confirmed={drawer.confirmed}
+      />
     </Surface>
   );
 }
@@ -380,6 +509,35 @@ export function AdoptionChart() {
   const step = W / (labels.length - 1);
   const dx = divergeIndex * step;
   const dy = scale(actual[divergeIndex]!, min, max);
+  const drawer = useDrawer();
+
+  const weekDetail = (i: number) => ({
+    title: `${labels[i]} — adoption detail`,
+    meta: `Acme Corporation · Strategic workflow adoption`,
+    summary:
+      i >= divergeIndex
+        ? "From this point the actual adoption curve separates from the committed target. Otto correlated the break with a deployment configuration change."
+        : "Adoption tracked to plan in this period. Otto kept monitoring without raising anything.",
+    sections: [
+      {
+        label: "Readings",
+        items: [
+          `Actual adoption: ${actual[i]}%`,
+          `Target adoption: ${target[i]}%`,
+          projected[i] != null ? `Projected if unaddressed: ${projected[i]}%` : "Projection not applicable for this period",
+        ],
+      },
+      {
+        label: "Agent evidence",
+        items: [
+          "Adoption Signal Agent — workflow-level usage per deployment group",
+          "Deployment Health Agent — configuration change history",
+          "Support Signal Agent — related tickets and user friction",
+        ],
+      },
+    ],
+    confirm: "Use this period as evidence",
+  });
 
   return (
     <div>
@@ -403,17 +561,43 @@ export function AdoptionChart() {
         <path d={path(projected, min, max)} fill="none" stroke="var(--color-signal)" strokeWidth="1.5" strokeDasharray="3 4" />
         <path d={path(actual, min, max)} fill="none" stroke="var(--color-primary)" strokeWidth="2.25" />
         <line x1={dx} x2={dx} y1="8" y2={H - 8} stroke="var(--color-signal)" strokeOpacity="0.5" strokeDasharray="3 3" />
-        <circle cx={dx} cy={dy} r="4.5" fill="var(--color-signal)" />
+        <circle
+          cx={dx}
+          cy={dy}
+          r="7"
+          fill="var(--color-signal)"
+          fillOpacity="0.2"
+          className="cursor-pointer"
+          onClick={() => drawer.open(`week:${divergeIndex}`, weekDetail(divergeIndex))}
+        />
+        <circle cx={dx} cy={dy} r="4.5" fill="var(--color-signal)" className="pointer-events-none" />
       </svg>
       <div className="flex justify-between font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-        {labels.map((l) => (
-          <span key={l}>{l}</span>
+        {labels.map((l, i) => (
+          <button
+            key={l}
+            type="button"
+            onClick={() => drawer.open(`week:${i}`, weekDetail(i))}
+            className="rounded px-1 py-0.5 uppercase tracking-[0.1em] hover:bg-surface hover:text-foreground"
+          >
+            {l}
+          </button>
         ))}
       </div>
-      <p className="mt-3 text-[13px] text-muted-foreground">
+      <button
+        type="button"
+        onClick={() => drawer.open(`week:${divergeIndex}`, weekDetail(divergeIndex))}
+        className="mt-3 block text-left text-[13px] text-muted-foreground hover:text-foreground"
+      >
         <span className="font-medium text-foreground">Week 4 —</span> adoption diverged from target,
         one day after the deployment configuration change.
-      </p>
+      </button>
+      <DetailDrawer
+        detail={drawer.detail}
+        onClose={drawer.close}
+        onConfirm={drawer.confirm}
+        confirmed={drawer.confirmed}
+      />
     </div>
   );
 }
@@ -434,6 +618,33 @@ export function ValueChart() {
   const step = W / (points.length - 1);
   const line = path(points, min, max);
   const area = `${line} L${W} ${H - 12} L0 ${H - 12} Z`;
+  const drawer = useDrawer();
+
+  const markDetail = (m: { i: number; label: string }) => ({
+    title: m.label,
+    meta: `Acme Corporation · Value realized: $${points[m.i]}M`,
+    summary:
+      "Otto captured this value moment when it happened, with the evidence attached — nothing had to be reconstructed at quarter end.",
+    sections: [
+      {
+        label: "What happened",
+        items: [
+          m.label,
+          `Cumulative value realized at this point: $${points[m.i]}M`,
+          "Captured automatically from workflow and outcome records",
+        ],
+      },
+      {
+        label: "Evidence attached",
+        items: [
+          "Value Realization Agent — outcome linked to the customer's committed objective",
+          "Adoption Signal Agent — usage change that produced the outcome",
+          "Executive Narrative Agent — phrasing prepared for the customer review",
+        ],
+      },
+    ],
+    confirm: "Include in the executive value story",
+  });
 
   return (
     <div>
@@ -461,21 +672,46 @@ export function ValueChart() {
             key={m.label}
             cx={m.i * step}
             cy={scale(points[m.i]!, min, max)}
+            r="7"
+            fill="var(--color-otto)"
+            fillOpacity="0.14"
+            className="cursor-pointer"
+            onClick={() => drawer.open(`mark:${m.label}`, markDetail(m))}
+          />
+        ))}
+        {marks.map((m) => (
+          <circle
+            key={`dot-${m.label}`}
+            cx={m.i * step}
+            cy={scale(points[m.i]!, min, max)}
             r="4"
             fill="var(--color-surface)"
             stroke="var(--color-otto)"
             strokeWidth="2"
+            className="pointer-events-none"
           />
         ))}
       </svg>
       <ol className="mt-5 grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
         {marks.map((m) => (
-          <li key={m.label} className="flex items-baseline gap-2 text-[13px]">
-            <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-otto" />
-            <span className="text-muted-foreground">{m.label}</span>
+          <li key={m.label}>
+            <button
+              type="button"
+              onClick={() => drawer.open(`mark:${m.label}`, markDetail(m))}
+              className="group flex items-baseline gap-2 text-left text-[13px]"
+            >
+              <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-otto" />
+              <span className="text-muted-foreground group-hover:text-foreground">{m.label}</span>
+            </button>
           </li>
         ))}
       </ol>
+      <DetailDrawer
+        detail={drawer.detail}
+        onClose={drawer.close}
+        onConfirm={drawer.confirm}
+        confirmed={drawer.confirmed}
+      />
     </div>
   );
 }

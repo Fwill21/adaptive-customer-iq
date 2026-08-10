@@ -35,7 +35,8 @@ import {
 } from "@/lib/qbr-data";
 import { AGENTS } from "@/lib/story-data";
 import { AgentDots, OttoMark, OttoVoice, PrimaryAction } from "./primitives";
-import { ActionButton, DetailDrawer, useDrawer } from "./drawer";
+import { ActionButton, DetailDrawer, useDrawer, useInfoDrawer } from "./drawer";
+import { agentDetail } from "@/lib/agent-details";
 import {
   AdoptionChart,
   Disclosure,
@@ -209,6 +210,7 @@ const ASK_ACME_DETAIL = {
 /* ═════════════════ 02 · Build the Story ═════════════════ */
 
 export function QbrBuildStory() {
+  const info = useInfoDrawer();
   const drawer = useDrawer();
   return (
     <div className="space-y-6">
@@ -265,13 +267,35 @@ export function QbrBuildStory() {
             <ol className="space-y-3">
               {QBR_STORY_ARC.map((s, i) => (
                 <li key={s.label}>
-                  <div className="rounded-xl border border-border bg-background px-5 py-4">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      info.open(`arc:${s.label}`, {
+                        title: s.label,
+                        meta: "Value story arc · Q3 2026",
+                        summary: s.body,
+                        sections: [
+                          { label: "Where this came from", items: [s.link] },
+                          {
+                            label: "Evidence Otto attached",
+                            items: [
+                              "Product telemetry for the affected workflows",
+                              "Deployment and configuration change history",
+                              "Outcome records linked to Acme's committed objectives",
+                            ],
+                          },
+                        ],
+                        confirm: "Keep this in the customer narrative",
+                      })
+                    }
+                    className="block w-full rounded-xl border border-border bg-background px-5 py-4 text-left transition-colors hover:border-otto/40"
+                  >
                     <span className="eyebrow">{s.label}</span>
                     <p className="mt-1.5 text-[15px] leading-snug">{s.body}</p>
                     <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] text-otto">
                       {s.link}
                     </p>
-                  </div>
+                  </button>
                   {i < QBR_STORY_ARC.length - 1 && (
                     <p className="py-1.5 text-center text-muted-foreground" aria-hidden="true">
                       ↓
@@ -280,6 +304,7 @@ export function QbrBuildStory() {
                 </li>
               ))}
             </ol>
+            {info.node}
             <p className="border-t border-border pt-5 text-[13px] text-muted-foreground">
               The QBR is not a separate history. It synthesizes the same customer intelligence
               accumulated throughout the quarter.
@@ -413,6 +438,7 @@ export function QbrCloseGaps() {
 /* ═════════════════ 04 · Coordinate the Team ═════════════════ */
 
 export function QbrCoordinate({ role }: { role: Role }) {
+  const info = useInfoDrawer();
   const [state, setState] = useState<"idle" | "working" | "done">("idle");
   if (role === "TSM") return <TsmQbrContribution />;
 
@@ -442,11 +468,39 @@ export function QbrCoordinate({ role }: { role: Role }) {
             <ul className="divide-y divide-border border-y border-border">
               {QBR_CONTRIBUTIONS.map((c) => (
                 <li key={c.title} className="flex flex-wrap items-start justify-between gap-4 py-5">
-                  <div className="min-w-0 max-w-xl space-y-1.5">
-                    <p className="text-[15px] font-semibold">{c.title}</p>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      info.open(`contribution:${c.title}`, {
+                        title: c.title,
+                        meta: `${c.owner} · ${c.status}`,
+                        summary: c.detail,
+                        sections: [
+                          {
+                            label: "Context Otto prepared",
+                            items: [
+                              "Relevant quarter history already attached — nothing to re-gather",
+                              "Framed for the QBR audience, not as an internal task",
+                              "Visible to the whole account team in one shared context",
+                            ],
+                          },
+                          {
+                            label: "What is asked of the human",
+                            items: [
+                              "Review and confirm the framing",
+                              "Add judgment Otto cannot infer",
+                            ],
+                          },
+                        ],
+                        confirm: "Confirm this contribution",
+                      })
+                    }
+                    className="min-w-0 max-w-xl space-y-1.5 text-left"
+                  >
+                    <p className="text-[15px] font-semibold hover:text-otto">{c.title}</p>
                     <p className="text-[13px] text-muted-foreground">{c.owner}</p>
                     <p className="text-[14px] leading-snug">{c.detail}</p>
-                  </div>
+                  </button>
                   <StatusPill
                     tone={
                       c.status === "Context ready"
@@ -462,6 +516,7 @@ export function QbrCoordinate({ role }: { role: Role }) {
               ))}
             </ul>
 
+            {info.node}
             {state === "idle" && (
               <PrimaryAction onClick={start}>
                 Coordinate QBR preparation <ArrowRight className="size-4" aria-hidden="true" />
@@ -568,6 +623,7 @@ function TsmQbrContribution() {
 /* ═════════════════ 05 · Prepare Me ═════════════════ */
 
 export function QbrPrepareMe({ role }: { role: Role }) {
+  const info = useInfoDrawer();
   const drawer = useDrawer();
   const [coach, setCoach] = useState<string[]>([]);
   const [notes, setNotes] = useState<string[]>([]);
@@ -619,12 +675,44 @@ export function QbrPrepareMe({ role }: { role: Role }) {
               <span className="eyebrow text-otto">What we need from this QBR</span>
               <ol className="mt-4 space-y-3">
                 {QBR_DECISIONS_NEEDED.map((d, i) => (
-                  <li key={d} className="flex gap-4 text-[15px] leading-snug">
-                    <span className="font-mono text-[12px] text-otto">{i + 1}</span>
-                    {d}
+                  <li key={d}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        info.open(`decision-needed:${d}`, {
+                          title: "Decision the QBR should produce",
+                          meta: `Priority ${i + 1} · Acme Corporation`,
+                          summary: d,
+                          sections: [
+                            {
+                              label: "Why this decision now",
+                              items: [
+                                "Q3 evidence makes the trade-off clear enough to decide",
+                                "Delaying it pushes value realization into Q4",
+                                "The sponsor has the authority to close it in the room",
+                              ],
+                            },
+                            {
+                              label: "How Otto supports it",
+                              items: [
+                                "Supporting evidence prepared and ready to show",
+                                "Likely objections anticipated with responses",
+                                "Outcome captured automatically once agreed",
+                              ],
+                            },
+                          ],
+                          confirm: "Put this on the QBR agenda",
+                        })
+                      }
+                      className="flex w-full gap-4 text-left text-[15px] leading-snug hover:text-otto"
+                    >
+                      <span className="font-mono text-[12px] text-otto">{i + 1}</span>
+                      {d}
+                    </button>
                   </li>
                 ))}
               </ol>
+              {info.node}
               <p className="mt-5 border-t border-otto/20 pt-4 text-[13px] text-muted-foreground">
                 Otto plans for the decisions the meeting should produce, not only the content it
                 should present.
@@ -984,6 +1072,7 @@ export function QbrActivateNextQuarter({ onContinue }: { onContinue?: () => void
 /* ═════════════════ AI activity overlay for the QBR path ═════════════════ */
 
 export function QbrAgentChainPanel() {
+  const info = useInfoDrawer();
   return (
     <Surface className="lg:sticky lg:top-6">
       <SectionTitle meta="Leadership view">AI activity</SectionTitle>
@@ -999,11 +1088,18 @@ export function QbrAgentChainPanel() {
             {i < QBR_AGENT_CHAIN.length - 1 && (
               <span className="absolute left-[3.5px] top-4 h-[calc(100%+0.5rem)] w-px bg-border" />
             )}
-            <p className="text-[14px] font-medium">{a.agent}</p>
-            <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">{a.action}</p>
+            <button
+              type="button"
+              onClick={() => info.open(`agent:${a.agent}`, agentDetail(a.agent, a.action))}
+              className="group w-full text-left"
+            >
+              <p className="text-[14px] font-medium group-hover:text-otto">{a.agent}</p>
+              <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">{a.action}</p>
+            </button>
           </li>
         ))}
       </ol>
+      {info.node}
       <p className="mt-6 border-t border-border pt-4 text-[13px]">
         <span className="font-semibold">6 specialized agents contributed.</span>{" "}
         <span className="text-muted-foreground">

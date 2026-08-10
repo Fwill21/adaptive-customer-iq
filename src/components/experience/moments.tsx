@@ -25,7 +25,8 @@ import {
   WORKSTREAMS,
 } from "@/lib/story-data";
 import { OttoMark, OttoVoice, PrimaryAction } from "./primitives";
-import { ActionButton, DetailDrawer, useDrawer } from "./drawer";
+import { ActionButton, DetailDrawer, useDrawer, useInfoDrawer } from "./drawer";
+import { agentDetail } from "@/lib/agent-details";
 import {
   AdoptionChart,
   Disclosure,
@@ -680,6 +681,7 @@ export function MomentValue() {
 /* ═════════════════ 06 · Leadership reveal ═════════════════ */
 
 export function MomentArchitecture() {
+  const info = useInfoDrawer();
   return (
     <div className="space-y-10">
       <div className="text-center">
@@ -692,9 +694,29 @@ export function MomentArchitecture() {
       <Surface className="mx-auto max-w-3xl space-y-3 p-8 md:p-12">
         {OPERATING_MODEL.map((layer, i) => (
           <div key={layer.title}>
-            <div
+            <button
+              type="button"
+              onClick={() =>
+                info.open(`layer:${layer.title}`, {
+                  title: layer.title,
+                  meta: "Operating model layer",
+                  summary:
+                    "Each layer of the operating model is real in the prototype — this is what sits at this level and what it is responsible for.",
+                  sections: [
+                    { label: "At this layer", items: [...layer.items] },
+                    {
+                      label: "Why it matters",
+                      items: [
+                        "People stay in judgment and relationship work",
+                        "Otto orchestrates; specialized agents do focused work",
+                        "The environment keeps customer context continuously current",
+                      ],
+                    },
+                  ],
+                })
+              }
               className={cn(
-                "rounded-xl border px-6 py-6 text-center",
+                "block w-full rounded-xl border px-6 py-6 text-center transition-colors hover:border-otto/40",
                 layer.title === "OTTO"
                   ? "border-otto/30 bg-otto-soft"
                   : "border-border bg-background",
@@ -711,7 +733,7 @@ export function MomentArchitecture() {
               <p className="mx-auto mt-3 max-w-lg text-[15px] leading-relaxed">
                 {layer.items.join(" · ")}
               </p>
-            </div>
+            </button>
             {i < OPERATING_MODEL.length - 1 && (
               <div className="mx-auto h-6 w-px bg-border-strong" aria-hidden="true" />
             )}
@@ -720,12 +742,34 @@ export function MomentArchitecture() {
 
         <div className="grid gap-4 border-t border-border pt-8 md:grid-cols-3">
           {AWARENESSES.map((a) => (
-            <div key={a.title}>
-              <p className="text-[14px] font-semibold">{a.title}</p>
+            <button
+              key={a.title}
+              type="button"
+              onClick={() =>
+                info.open(`awareness:${a.title}`, {
+                  title: a.title,
+                  meta: "One of the three awarenesses",
+                  summary: a.body,
+                  sections: [
+                    {
+                      label: "How it shows up in this story",
+                      items: [
+                        "Acme's adoption decline was detected without anyone asking",
+                        "The response was coordinated across CSM, TSM and AE roles",
+                        "The value story assembled itself from what actually happened",
+                      ],
+                    },
+                  ],
+                })
+              }
+              className="group text-left"
+            >
+              <p className="text-[14px] font-semibold group-hover:text-otto">{a.title}</p>
               <p className="mt-1.5 text-[13px] leading-snug text-muted-foreground">{a.body}</p>
-            </div>
+            </button>
           ))}
         </div>
+        {info.node}
       </Surface>
 
       <div className="mx-auto max-w-3xl space-y-4 text-center">
@@ -805,6 +849,7 @@ export function MomentBeforeAfter() {
 /* ═════════════════ AI activity overlay (leadership only) ═════════════════ */
 
 export function AgentChainPanel() {
+  const info = useInfoDrawer();
   return (
     <Surface className="lg:sticky lg:top-6">
       <SectionTitle meta="Leadership view">AI activity</SectionTitle>
@@ -820,11 +865,18 @@ export function AgentChainPanel() {
             {i < AGENT_CHAIN.length - 1 && (
               <span className="absolute left-[3.5px] top-4 h-[calc(100%+0.5rem)] w-px bg-border" />
             )}
-            <p className="text-[14px] font-medium">{a.agent}</p>
-            <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">{a.action}</p>
+            <button
+              type="button"
+              onClick={() => info.open(`agent:${a.agent}`, agentDetail(a.agent, a.action))}
+              className="group w-full text-left"
+            >
+              <p className="text-[14px] font-medium group-hover:text-otto">{a.agent}</p>
+              <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">{a.action}</p>
+            </button>
           </li>
         ))}
       </ol>
+      {info.node}
       <p className="mt-6 border-t border-border pt-4 text-[13px]">
         <span className="font-semibold">4 specialized agents contributed.</span>{" "}
         <span className="text-muted-foreground">

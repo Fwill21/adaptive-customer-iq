@@ -197,3 +197,19 @@ export function useDrawer() {
     confirmed: key ? confirmedKeys.includes(key) : false,
   };
 }
+
+/** Convenience wrapper: returns an opener plus the drawer element to render. */
+export function useInfoDrawer() {
+  const drawer = useDrawer();
+  return {
+    open: drawer.open,
+    node: (
+      <DetailDrawer
+        detail={drawer.detail}
+        onClose={drawer.close}
+        onConfirm={drawer.confirm}
+        confirmed={drawer.confirmed}
+      />
+    ),
+  };
+}
