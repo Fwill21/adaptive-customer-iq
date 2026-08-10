@@ -18,7 +18,7 @@ import { DetailDrawer, useDrawer } from "./drawer";
 export function metricDetail(label: string, value: string, note?: string): Detail {
   return {
     title: label,
-    meta: `Acme Corporation · Q3 2026 · ${value}`,
+    meta: `Q3 2026 · ${value}`,
     summary: `Otto assembled ${label.toLowerCase()} (${value}) from live product telemetry, workflow records and account history — refreshed continuously, not at reporting time.`,
     sections: [
       {
