@@ -20,7 +20,7 @@ export function PathSelector({ onSelect }: { onSelect: (path: PathId) => void })
           </p>
         </header>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
           {PATHS.map((p, i) => (
             <section
               key={p.id}
@@ -71,7 +71,7 @@ export function PathSelector({ onSelect }: { onSelect: (path: PathId) => void })
         </div>
 
         <p className="text-center text-[13px] text-muted-foreground">
-          Two views into the same operating model. You can change demo path at any time.
+          Three views into the same operating model. You can change demo path at any time.
         </p>
       </div>
     </main>

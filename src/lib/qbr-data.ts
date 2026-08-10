@@ -2,7 +2,7 @@ import type { AgentKey, Detail, DetailSection, Stage } from "./story-data";
 
 /* ═════════ Path model (leadership demo paths) ═════════ */
 
-export type PathId = "quarter" | "qbr";
+export type PathId = "quarter" | "qbr" | "modes";
 
 export const PATHS = [
   {
@@ -57,6 +57,29 @@ export const PATHS = [
       "conversational intelligence",
       "outcome capture",
       "next-quarter activation",
+    ],
+  },
+  {
+    id: "modes" as PathId,
+    label: "Three Ways to Work",
+    subtitle: "One Environment. Conversational, UI-Driven, Hybrid.",
+    description:
+      "A short leadership demonstration of how the same intelligence, context and orchestration support three different ways of working — and why AI-native does not mean conversation-only.",
+    cta: "Explore Three Ways to Work",
+    steps: [
+      "01 Three Ways to Work",
+      "02 Live Mode Sequence",
+      "03 Same Intelligence",
+      "04 Operating Model",
+    ],
+    question:
+      "What happens when the environment adapts to how the person wants to work, not only to what they need?",
+    proves: [
+      "flexible interaction",
+      "continuous intelligence",
+      "context preserved across modes",
+      "dynamic interface generation",
+      "human judgment in every mode",
     ],
   },
 ];

@@ -35,6 +35,18 @@ import {
 import { PathSelector } from "./PathSelector";
 import { LeftNav, Surface, TopBar } from "./shell";
 import { ActionButton } from "./drawer";
+import {
+  ConversationalWorkspace,
+  HybridStrip,
+  ModeSequenceDemo,
+  ModesOverview,
+  OperatingModelClosing,
+  SameIntelligenceView,
+  UiDrivenNote,
+  WorkModeControl,
+  scriptFor,
+} from "./modes";
+import { MODES_MOMENTS, MODE_CONTEXT_LINE, type ModeId } from "@/lib/mode-data";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const BREADCRUMBS: Record<number, string[]> = {
@@ -62,9 +74,12 @@ export function Experience() {
   const [step, setStep] = useState(0);
   const [showActivity, setShowActivity] = useState(false);
   const [role, setRole] = useState<Role>("CSM");
+  // Work mode is how the person interacts. Hybrid best shows the future state.
+  const [mode, setMode] = useState<ModeId>("hybrid");
 
   const isQbr = path === "qbr";
-  const moments = isQbr ? QBR_MOMENTS : MOMENTS;
+  const isModes = path === "modes";
+  const moments = isModes ? MODES_MOMENTS : isQbr ? QBR_MOMENTS : MOMENTS;
   const moment = moments[step] ?? moments[0]!;
 
   const go = useCallback(
@@ -88,22 +103,33 @@ export function Experience() {
     setStep(0);
     setRole("CSM");
     setShowActivity(false);
+    // Mode is deliberately preserved across paths and steps — switching never
+    // resets account, role or workflow context.
   };
 
   if (!path) return <PathSelector onSelect={openPath} />;
 
   const pathMeta = PATHS.find((p) => p.id === path)!;
-  const stages = (isQbr ? QBR_MOMENT_STAGES : MOMENT_STAGES)[moment.id] ?? [];
-  const activityAvailable = isQbr
-    ? moment.id >= 1 && moment.id <= 5
-    : moment.id >= 2 && moment.id <= 5;
-  const roleAvailable = isQbr ? moment.id === 4 || moment.id === 5 : true;
+  const stages = isModes ? [] : (isQbr ? QBR_MOMENT_STAGES : MOMENT_STAGES)[moment.id] ?? [];
+  const activityAvailable = isModes
+    ? false
+    : isQbr
+      ? moment.id >= 1 && moment.id <= 5
+      : moment.id >= 2 && moment.id <= 5;
+  const roleAvailable = isModes ? false : isQbr ? moment.id === 4 || moment.id === 5 : true;
+  const script = isModes ? undefined : scriptFor(path, moment.id);
+  const contextLine =
+    MODE_CONTEXT_LINE[`${path}-${moment.id}`] ?? "Acme Corporation · Q3";
+  const conversationalOnly = !isModes && mode === "conversational" && !!script;
 
   return (
     <div className="flex min-h-screen bg-background">
       <LeftNav
-        active={(isQbr ? QBR_NAV_ACTIVE : NAV_ACTIVE)[moment.id] ?? "Home"}
+        active={
+          isModes ? "Insights" : (isQbr ? QBR_NAV_ACTIVE : NAV_ACTIVE)[moment.id] ?? "Home"
+        }
         onNavigate={(item) => {
+          if (isModes) return;
           if (isQbr) {
             const target = QBR_MOMENTS.findIndex((m) => QBR_NAV_ACTIVE[m.id] === item);
             if (target >= 0) setStep(target);
@@ -118,7 +144,11 @@ export function Experience() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar
-          breadcrumb={(isQbr ? QBR_BREADCRUMBS : BREADCRUMBS)[moment.id] ?? ["Home"]}
+          breadcrumb={
+            isModes
+              ? ["Insights", "Three ways to work"]
+              : (isQbr ? QBR_BREADCRUMBS : BREADCRUMBS)[moment.id] ?? ["Home"]
+          }
           person={
             role === "CSM"
               ? { name: "Alex Rivera", role: "CSM · Strategic Enterprise" }
@@ -128,14 +158,48 @@ export function Experience() {
 
         <main className="flex-1 px-6 pb-32 pt-8 lg:px-10 lg:pt-10">
           <div
-            key={`${path}-${moment.id}-${role}`}
+            key={`${path}-${moment.id}-${role}-${mode}`}
             className={cn(
               "soft-in mx-auto w-full max-w-[80rem]",
               showActivity && activityAvailable && "grid gap-6 lg:grid-cols-[1fr_19rem]",
             )}
           >
             <div className="min-w-0 space-y-6">
-              {isQbr ? (
+              {script && mode === "ui" && (
+                <UiDrivenNote script={script} contextLine={contextLine} />
+              )}
+              {script && mode === "hybrid" && (
+                <HybridStrip script={script} contextLine={contextLine} />
+              )}
+
+              {conversationalOnly && script ? (
+                <ConversationalWorkspace
+                  script={script}
+                  contextLine={contextLine}
+                  momentLabel={moment.label}
+                  role={role}
+                />
+              ) : isModes ? (
+                <>
+                  {step === 0 && <ModesOverview />}
+                  {step === 1 && <ModeSequenceDemo onSetMode={setMode} />}
+                  {step === 2 && <SameIntelligenceView />}
+                  {step === 3 && <OperatingModelClosing />}
+                  {step === 3 && (
+                    <Surface className="flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <p className="text-[15px] font-semibold">See the modes in a real story</p>
+                        <p className="mt-1 text-[13px] text-muted-foreground">
+                          Run Quarter in Motion or the AI-Native QBR in any work mode.
+                        </p>
+                      </div>
+                      <ActionButton variant="solid" onClick={() => openPath("quarter")}>
+                        Open Quarter in Motion
+                      </ActionButton>
+                    </Surface>
+                  )}
+                </>
+              ) : isQbr ? (
                 <>
                   {step === 0 && <QbrApproaching />}
                   {step === 1 && <QbrBuildStory />}
@@ -174,6 +238,7 @@ export function Experience() {
                 </>
               )}
             </div>
+
             {showActivity && activityAvailable && (
               <aside className="rise h-fit">
                 {isQbr ? <QbrAgentChainPanel /> : <AgentChainPanel />}
@@ -221,6 +286,9 @@ export function Experience() {
                   {stages.join(" → ")}
                 </span>
               )}
+
+              <WorkModeControl mode={mode} onChange={setMode} disabled={isModes} />
+
 
               <div className="flex items-center rounded-lg border border-border p-0.5">
                 <span className="px-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
