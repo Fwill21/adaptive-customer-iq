@@ -107,7 +107,34 @@ export function Experience() {
     // resets account, role or workflow context.
   };
 
-  if (!path) return <PathSelector onSelect={openPath} />;
+  // From the path selector, any nav or breadcrumb item enters the primary
+  // Quarter in Motion path at the closest matching moment.
+  const navigateFromSelector = (item: string) => {
+    if (item === "Home" || item === "Customer Success" || item === "Explore the future") {
+      setPath("quarter");
+      setStep(0);
+      return;
+    }
+    const explicit: Record<string, number> = { "Success Plans": 2, Meetings: 3 };
+    const target = explicit[item] ?? MOMENTS.findIndex((m) => NAV_ACTIVE[m.id] === item);
+    setPath("quarter");
+    setStep(target >= 0 ? target : 0);
+  };
+
+  if (!path)
+    return (
+      <div className="flex min-h-screen bg-background">
+        <LeftNav active="Home" onNavigate={navigateFromSelector} />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <TopBar
+            breadcrumb={["Home", "Explore the future"]}
+            onBreadcrumb={navigateFromSelector}
+            person={{ name: "Alex Rivera", role: "CSM · Strategic Enterprise" }}
+          />
+          <PathSelector onSelect={openPath} />
+        </div>
+      </div>
+    );
 
   const pathMeta = PATHS.find((p) => p.id === path)!;
   const stages = isModes ? [] : (isQbr ? QBR_MOMENT_STAGES : MOMENT_STAGES)[moment.id] ?? [];
