@@ -107,7 +107,20 @@ export function Experience() {
     // resets account, role or workflow context.
   };
 
-  if (!path) return <PathSelector onSelect={openPath} />;
+  if (!path)
+    return (
+      <div className="flex min-h-screen bg-background">
+        <LeftNav active="Home" onNavigate={navigateFromSelector} />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <TopBar
+            breadcrumb={["Home", "Explore the future"]}
+            onBreadcrumb={navigateFromSelector}
+            person={{ name: "Alex Rivera", role: "CSM · Strategic Enterprise" }}
+          />
+          <PathSelector onSelect={openPath} />
+        </div>
+      </div>
+    );
 
   const pathMeta = PATHS.find((p) => p.id === path)!;
   const stages = isModes ? [] : (isQbr ? QBR_MOMENT_STAGES : MOMENT_STAGES)[moment.id] ?? [];
