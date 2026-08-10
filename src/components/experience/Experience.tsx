@@ -173,10 +173,8 @@ export function Experience() {
               ? ["Insights", "Three ways to work"]
               : (isQbr ? QBR_BREADCRUMBS : BREADCRUMBS)[moment.id] ?? ["Home"]
           }
-          onBreadcrumb={(item) => {
-            if (item === "Home" || item === "Customer Success") setStep(0);
-            else navigate(item);
-          }}
+          onBreadcrumb={navigate}
+
           person={
             role === "CSM"
               ? { name: "Alex Rivera", role: "CSM · Strategic Enterprise" }
