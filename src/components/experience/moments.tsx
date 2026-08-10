@@ -597,6 +597,7 @@ export function MomentPrepare({ role }: { role: Role }) {
 /* ═════════════════ 05 · Show the Value ═════════════════ */
 
 export function MomentValue() {
+  const drawer = useDrawer();
   return (
     <div className="space-y-6">
       <PageHeading
@@ -648,6 +649,13 @@ export function MomentValue() {
                     </span>
                   </p>
                   <p className="text-[13px] leading-snug text-muted-foreground">{o.reason}</p>
+                  <ActionButton
+                    onClick={() => drawer.open(`opp:${o.title}`, OPPORTUNITY_DETAILS[o.title]!)}
+                    done={drawer.isConfirmed(`opp:${o.title}`)}
+                    doneLabel="Added to plan"
+                  >
+                    Review opportunity
+                  </ActionButton>
                 </li>
               ))}
             </ul>
@@ -657,7 +665,15 @@ export function MomentValue() {
           </Surface>
         </div>
       </div>
+
+      <DetailDrawer
+        detail={drawer.detail}
+        onClose={drawer.close}
+        onConfirm={drawer.confirm}
+        confirmed={drawer.confirmed}
+      />
     </div>
+
   );
 }
 
