@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import {
   NAV,
@@ -8,7 +8,7 @@ import {
   OTTO_SUGGESTIONS,
   OTTO_ANSWERS,
   OTTO_FALLBACK,
-  SEARCH_RESULTS,
+  
 } from "@/lib/story-data";
 import type { Detail } from "@/lib/story-data";
 import { OttoMark } from "./primitives";
@@ -114,6 +114,24 @@ export function LeftNav({
   );
 }
 
+/* Searchable index — every entry resolves to a real destination in the
+ * experience so search is navigation, not decoration. */
+type SearchEntry = { label: string; group: string; hint: string; target: string };
+
+const SEARCH_INDEX: SearchEntry[] = [
+  { label: "Acme Corporation", group: "Accounts", hint: "Strategic Enterprise · Q3 in motion", target: "Accounts" },
+  { label: "Globex Industries", group: "Accounts", hint: "Enterprise · healthy adoption", target: "Accounts" },
+  { label: "Contoso Group", group: "Accounts", hint: "Enterprise · renewal in 90 days", target: "Accounts" },
+  { label: "Acme adoption trajectory", group: "Signals", hint: "Adoption declined 18% since week 6", target: "Customer Activity" },
+  { label: "Wave 2 rollout milestone", group: "Signals", hint: "Deployment history and configuration change", target: "Customer Activity" },
+  { label: "Q3 value realized", group: "Value", hint: "Outcomes linked to committed objectives", target: "Value" },
+  { label: "Success plan — Acme", group: "Success Plans", hint: "Objectives, owners and next actions", target: "Success Plans" },
+  { label: "Executive briefing", group: "Meetings", hint: "Decision-first prep for the next review", target: "Meetings" },
+  { label: "What needs my attention this week?", group: "Ask Otto", hint: "Prioritized situations across the portfolio", target: "Home" },
+  { label: "Which accounts are at risk?", group: "Ask Otto", hint: "Risk signals ranked by revenue exposure", target: "Home" },
+  { label: "How does this environment actually work?", group: "Ask Otto", hint: "The operating model and the three awarenesses", target: "Insights" },
+];
+
 export function TopBar({
   breadcrumb,
   person,
@@ -124,6 +142,38 @@ export function TopBar({
   onBreadcrumb?: (item: string) => void;
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const q = query.trim().toLowerCase();
+  const results = q
+    ? SEARCH_INDEX.filter(
+        (e) =>
+          e.label.toLowerCase().includes(q) ||
+          e.group.toLowerCase().includes(q) ||
+          e.hint.toLowerCase().includes(q),
+      )
+    : SEARCH_INDEX;
+  const groups = Array.from(new Set(results.map((r) => r.group)));
+
+  const closeSearch = () => {
+    setSearchOpen(false);
+    setQuery("");
+  };
+
+  const select = (entry: SearchEntry) => {
+    closeSearch();
+    onBreadcrumb?.(entry.target);
+  };
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeSearch();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [searchOpen]);
+
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-6 py-3 lg:px-10">
       <ol className="flex items-center gap-2 text-[13px] text-muted-foreground">
@@ -155,37 +205,79 @@ export function TopBar({
         })}
       </ol>
 
-      <div className="flex items-center gap-4">
-        <button
-          type="button"
-          onClick={() => setSearchOpen(true)}
-          className="hidden items-center gap-2 rounded-lg border border-border bg-surface px-3 py-1.5 text-[13px] text-muted-foreground hover:text-foreground sm:flex"
-        >
-          <Search className="size-3.5" aria-hidden="true" /> Search
-        </button>
+      <div className="relative flex items-center gap-4">
+        <div className="relative hidden sm:block">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <input
+            type="search"
+            value={query}
+            onFocus={() => setSearchOpen(true)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setSearchOpen(true);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && results[0]) select(results[0]);
+            }}
+            placeholder="Search accounts, signals, value…"
+            aria-label="Search"
+            className="w-[15rem] rounded-lg border border-border bg-surface py-1.5 pl-9 pr-3 text-[13px] outline-none transition-colors placeholder:text-muted-foreground focus:border-otto/50 lg:w-[19rem]"
+          />
+
+          {searchOpen && (
+            <>
+              <button
+                type="button"
+                aria-label="Close search"
+                onClick={closeSearch}
+                className="fixed inset-0 z-40 cursor-default"
+              />
+              <div className="soft-in absolute right-0 top-[calc(100%+0.5rem)] z-50 max-h-[26rem] w-[24rem] overflow-y-auto rounded-2xl border border-border bg-surface p-2 shadow-lift">
+                {groups.length === 0 && (
+                  <p className="px-3 py-4 text-[13px] text-muted-foreground">
+                    Nothing matches “{query}”. Try an account, a signal or a value question.
+                  </p>
+                )}
+                {groups.map((g) => (
+                  <div key={g} className="py-1">
+                    <p className="px-3 pb-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                      {g}
+                    </p>
+                    {results
+                      .filter((r) => r.group === g)
+                      .map((r) => (
+                        <button
+                          key={r.label}
+                          type="button"
+                          onClick={() => select(r)}
+                          className="block w-full rounded-lg px-3 py-2 text-left transition-colors hover:bg-secondary"
+                        >
+                          <span className="block text-[13px] font-medium">{r.label}</span>
+                          <span className="mt-0.5 block text-[12px] text-muted-foreground">
+                            {r.hint}
+                          </span>
+                        </button>
+                      ))}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
         <span className="text-right text-[12px] leading-tight">
           {person.name}
           <br />
           <span className="text-muted-foreground">{person.role}</span>
         </span>
       </div>
-
-      <DetailDrawer
-        detail={
-          searchOpen
-            ? {
-                title: "Search",
-                meta: "Portfolio · Q3 2026",
-                summary: "Everything Otto currently knows about your portfolio is searchable.",
-                sections: SEARCH_RESULTS,
-              }
-            : null
-        }
-        onClose={() => setSearchOpen(false)}
-      />
     </div>
   );
 }
+
 
 
 /* ─────────────── Surfaces ─────────────── */
