@@ -8,7 +8,7 @@ import {
   OTTO_SUGGESTIONS,
   OTTO_ANSWERS,
   OTTO_FALLBACK,
-  SEARCH_RESULTS,
+  
 } from "@/lib/story-data";
 import type { Detail } from "@/lib/story-data";
 import { OttoMark } from "./primitives";
