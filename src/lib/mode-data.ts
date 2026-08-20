@@ -579,3 +579,200 @@ export const CLOSING_MESSAGE = {
   ],
   close: "One environment. Three ways to work.",
 };
+
+/* ═════════ Chip → response resolution ═════════
+ * Every suggested chip must change what is on screen: its own answer lines
+ * AND its own generated view. Intent is classified from the chip text so the
+ * behaviour is consistent across every path, moment and mode.
+ */
+
+type PromptIntent = {
+  id: string;
+  match: RegExp;
+  title: (base: string) => string;
+  note: string;
+  lead: string[];
+  metric: { value: string; label: string };
+  connection: string;
+  actions: string[];
+};
+
+const PROMPT_INTENTS: PromptIntent[] = [
+  {
+    id: "evidence",
+    match: /evidence|why|how (do|does|did) (you|otto)|confiden|prove|source/i,
+    title: (b) => `${b} · evidence chain`,
+    note: "Every claim traced back to the signal that produced it",
+    lead: [
+      "Here is the signal chain, not a summary: each figure below is linked to the agent and system that produced it.",
+      "Four agents corroborated this independently, so the conclusion does not rest on a single source.",
+    ],
+    metric: { value: "4", label: "Agents corroborating" },
+    connection: "Nothing here is inferred without a traceable source — you can open any figure to see it.",
+    actions: ["Open source records", "Share evidence"],
+  },
+  {
+    id: "scenario",
+    match: /scenario|what if|impact|forecast|model|project/i,
+    title: (b) => `${b} · scenario view`,
+    note: "Modelled from current signals, not a static template",
+    lead: [
+      "I modelled the scenario against live adoption, deployment and support signals rather than a fixed assumption set.",
+      "The downside case moves the milestone by roughly two weeks; the recommended case holds the committed date.",
+    ],
+    metric: { value: "2 wks", label: "Downside milestone slip" },
+    connection: "The scenario stays live — if the underlying signals move, this view recalculates.",
+    actions: ["Compare cases", "Capture as decision"],
+  },
+  {
+    id: "capture",
+    match: /capture|confirm|approve|commit|log|record/i,
+    title: (b) => `${b} · ready to confirm`,
+    note: "Prepared by Otto, committed only by you",
+    lead: [
+      "Prepared and staged — nothing reaches the customer or the plan until you confirm it.",
+      "I have written the interpretation into the shared account context so the TSM and AE see the same record.",
+    ],
+    metric: { value: "0", label: "Actions taken without you" },
+    connection: "Confirmation is the human boundary: AI prepares, you decide what becomes real.",
+    actions: ["Confirm", "Adjust before confirming"],
+  },
+  {
+    id: "adjust",
+    match: /adjust|recalculat|refine|change|re-?prioriti|edit|update/i,
+    title: (b) => `${b} · recalculated`,
+    note: "Recalculated against your adjustment",
+    lead: [
+      "Recalculated. Your adjustment propagated to the dependent milestones, owners and recommendations.",
+      "Nothing else in the quarter had to be restated — the environment kept the surrounding context.",
+    ],
+    metric: { value: "3", label: "Dependent items updated" },
+    connection: "Adjustments are cheap here because the context is continuous rather than rebuilt per session.",
+    actions: ["Apply changes", "Revert"],
+  },
+  {
+    id: "summarise",
+    match: /summari|recap|what did|overview|brief/i,
+    title: (b) => `${b} · summary`,
+    note: "Assembled from the full quarter of activity",
+    lead: [
+      "Here is the short version, assembled from the whole quarter rather than the last conversation.",
+      "The detail stays one click away — the summary is a view, not a replacement for the record.",
+    ],
+    metric: { value: "Q3", label: "Full period covered" },
+    connection: "Because the record is continuous, the summary needs no manual reconstruction.",
+    actions: ["Open full detail", "Send summary"],
+  },
+  {
+    id: "coordinate",
+    match: /coordinat|notify|hand off|hand-off|assign|involve|loop in|route/i,
+    title: (b) => `${b} · coordination`,
+    note: "Shared context passed with the work, not re-explained",
+    lead: [
+      "Routed with the full context attached — the receiving role opens directly into the same evidence.",
+      "No hand-off document, no re-explanation, no separate thread to reconcile later.",
+    ],
+    metric: { value: "3", label: "Roles on one context" },
+    connection: "Cross-role work is the same record seen from different responsibilities.",
+    actions: ["Notify owners", "View shared context"],
+  },
+  {
+    id: "prepare",
+    match: /prepare|prep|agenda|meeting|deck|briefing|talk track/i,
+    title: (b) => `${b} · prepared материал`,
+    note: "Decision-first preparation, not a slide dump",
+    lead: [
+      "Prepared as decisions to be made, with the supporting evidence behind each one.",
+      "I also drafted answers to the questions this sponsor is most likely to raise.",
+    ],
+    metric: { value: "3", label: "Likely questions answered" },
+    connection: "Preparation time collapses because the quarter never had to be reassembled.",
+    actions: ["Open briefing", "Adjust agenda"],
+  },
+  {
+    id: "value",
+    match: /value|outcome|roi|realiz|realis|business case|expansion|opportunit/i,
+    title: (b) => `${b} · value view`,
+    note: "Outcomes linked to the customer's committed objectives",
+    lead: [
+      "Framed against the objectives the customer committed to, not against product usage for its own sake.",
+      "Each outcome carries the evidence that makes it defensible in front of the sponsor.",
+    ],
+    metric: { value: "$2.4M", label: "Value realized to date" },
+    connection: "Value is maintained continuously, so it is current on any day of the quarter.",
+    actions: ["Open value story", "Share with sponsor"],
+  },
+  {
+    id: "risk",
+    match: /risk|exposure|slip|churn|blocker|gap/i,
+    title: (b) => `${b} · risk view`,
+    note: "Ranked by business exposure, not alert volume",
+    lead: [
+      "Ranked by what is genuinely exposed — business impact first, technical noise filtered out.",
+      "Each item carries the mitigation that would remove it and who would own that work.",
+    ],
+    metric: { value: "1", label: "Material risk remaining" },
+    connection: "Direction changes are surfaced while they are still recoverable.",
+    actions: ["Open mitigation plan", "Escalate"],
+  },
+  {
+    id: "show",
+    match: /show|open|view|see|review|walk me/i,
+    title: (b) => `${b} · detail view`,
+    note: "Assembled around what you asked to see",
+    lead: [
+      "Assembled around that specific question — this view exists because you asked for it, not because someone built a page for it.",
+      "You can keep questioning it, or act directly from here.",
+    ],
+    metric: { value: "Live", label: "Signals behind this view" },
+    connection: "The interface follows the question instead of the question following the interface.",
+    actions: ["Go deeper", "Act from here"],
+  },
+];
+
+function intentFor(question: string): PromptIntent | undefined {
+  return PROMPT_INTENTS.find((i) => i.match.test(question));
+}
+
+/** Distinct answer lines + distinct generated data for any chip or typed question. */
+export function promptResponse(
+  script: ModeScript,
+  question: string,
+): { lines: string[]; generated: GeneratedView } {
+  const q = question.trim();
+  const specific = MODE_PROMPT_ANSWERS[q];
+  if (specific) {
+    return {
+      lines: specific,
+      generated: {
+        ...script.generated,
+        title: q.replace(/[?.]$/, ""),
+        note: "Assembled around your question",
+      },
+    };
+  }
+
+  if (q.toLowerCase() === script.ask.toLowerCase()) {
+    return { lines: script.answer, generated: script.generated };
+  }
+
+  const intent = intentFor(q);
+  if (!intent) {
+    return {
+      lines: [...script.answer, ...MODE_FALLBACK_ANSWER.slice(0, 1)],
+      generated: { ...script.generated, title: q.replace(/[?.]$/, "") },
+    };
+  }
+
+  const base = script.generated;
+  return {
+    lines: [`${q.replace(/[?.]$/, "")} — ${intent.lead[0]}`, ...intent.lead.slice(1)],
+    generated: {
+      title: intent.title(base.title),
+      note: intent.note,
+      metrics: [intent.metric, ...base.metrics.slice(0, 2)],
+      connection: intent.connection,
+      actions: intent.actions,
+    },
+  };
+}
