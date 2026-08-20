@@ -973,3 +973,54 @@ export function StatusPill({
     </span>
   );
 }
+
+/** What a search produced — rendered at the top of the destination page so
+ * every suggestion and every custom query visibly changes the content. */
+export function SearchResultPanel({
+  result,
+  onDismiss,
+}: {
+  result: SearchResultData;
+  onDismiss: () => void;
+}) {
+  return (
+    <Surface className="soft-in border-otto/30 bg-otto-soft/40">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-otto">
+            Search result · {result.target}
+          </p>
+          <h2 className="mt-1 text-[17px] font-semibold">{result.title}</h2>
+          <p className="mt-1 max-w-[52rem] text-[13px] text-muted-foreground">
+            {result.summary}
+          </p>
+          <p className="mt-2 font-mono text-[11px] text-muted-foreground">
+            query: “{result.query}”
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onDismiss}
+          className="rounded-lg border border-border px-3 py-1.5 text-[12px] text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Clear search
+        </button>
+      </div>
+
+      <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {result.facts.map((f) => (
+          <div key={f.label} className="rounded-xl border border-border bg-surface px-3 py-2.5">
+            <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+              {f.label}
+            </dt>
+            <dd className="mt-1 text-[15px] font-semibold">{f.value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <p className="mt-3 text-[12px] text-muted-foreground">
+        Answered by {result.sources.join(" · ")}
+      </p>
+    </Surface>
+  );
+}
