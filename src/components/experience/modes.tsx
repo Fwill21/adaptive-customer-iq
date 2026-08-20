@@ -136,6 +136,7 @@ export function ConversationalWorkspace({
   momentLabel: string;
   role: string;
 }) {
+  const account = useAccount();
   const [value, setValue] = useState("");
   const [turns, setTurns] = useState<
     { q: string; a: string[]; view: ReturnType<typeof promptResponse>["generated"] }[]
@@ -259,6 +260,7 @@ export function HybridStrip({
   script: ModeScript;
   contextLine: string;
 }) {
+  const account = useAccount();
   const [value, setValue] = useState("");
   const [asked, setAsked] = useState<string | null>(null);
 
