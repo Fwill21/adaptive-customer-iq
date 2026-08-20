@@ -13,6 +13,12 @@ import {
 import type { Detail } from "@/lib/story-data";
 import { OttoMark } from "./primitives";
 import { DetailDrawer, useDrawer } from "./drawer";
+import {
+  SEARCH_INDEX,
+  resolveCustom,
+  searchResultFor,
+  type SearchEntry,
+} from "@/lib/search-data";
 
 /** Every metric in the environment is explainable — Otto can always show its reasoning. */
 export function metricDetail(label: string, value: string, note?: string): Detail {
