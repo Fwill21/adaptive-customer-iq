@@ -114,49 +114,16 @@ export function LeftNav({
   );
 }
 
-/* Searchable index — every entry resolves to a real destination in the
- * experience so search is navigation, not decoration. */
-type SearchEntry = { label: string; group: string; hint: string; target: string };
-
-const SEARCH_INDEX: SearchEntry[] = [
-  { label: "Acme Corporation", group: "Accounts", hint: "Strategic Enterprise · Q3 in motion", target: "Accounts" },
-  { label: "Globex Industries", group: "Accounts", hint: "Enterprise · healthy adoption", target: "Accounts" },
-  { label: "Contoso Group", group: "Accounts", hint: "Enterprise · renewal in 90 days", target: "Accounts" },
-  { label: "Acme adoption trajectory", group: "Signals", hint: "Adoption declined 18% since week 6", target: "Customer Activity" },
-  { label: "Wave 2 rollout milestone", group: "Signals", hint: "Deployment history and configuration change", target: "Customer Activity" },
-  { label: "Q3 value realized", group: "Value", hint: "Outcomes linked to committed objectives", target: "Value" },
-  { label: "Success plan — Acme", group: "Success Plans", hint: "Objectives, owners and next actions", target: "Success Plans" },
-  { label: "Executive briefing", group: "Meetings", hint: "Decision-first prep for the next review", target: "Meetings" },
-  { label: "What needs my attention this week?", group: "Ask Otto", hint: "Prioritized situations across the portfolio", target: "Home" },
-  { label: "Which accounts are at risk?", group: "Ask Otto", hint: "Risk signals ranked by revenue exposure", target: "Home" },
-  { label: "How does this environment actually work?", group: "Ask Otto", hint: "The operating model and the three awarenesses", target: "Insights" },
-];
-
-/* A custom query still has to land somewhere real — keyword routing maps free
- * text to the closest destination in the experience. */
-const CUSTOM_ROUTES: { keys: string[]; target: string; hint: string }[] = [
-  { keys: ["value", "roi", "outcome", "impact"], target: "Value", hint: "Strategic value and realized outcomes" },
-  { keys: ["risk", "churn", "adoption", "signal", "decline", "usage"], target: "Customer Activity", hint: "Signals and adoption trajectory" },
-  { keys: ["plan", "objective", "milestone", "owner"], target: "Success Plans", hint: "Success plan objectives and owners" },
-  { keys: ["meeting", "qbr", "brief", "review", "exec"], target: "Meetings", hint: "Executive briefing and meeting prep" },
-  { keys: ["account", "acme", "globex", "contoso", "customer"], target: "Accounts", hint: "Account workspace" },
-  { keys: ["agent", "otto", "architecture", "model", "awareness", "insight"], target: "Insights", hint: "Operating model and agent intelligence" },
-];
-
-function resolveCustom(query: string) {
-  const q = query.trim().toLowerCase();
-  const match = CUSTOM_ROUTES.find((r) => r.keys.some((k) => q.includes(k)));
-  return match ?? { target: "Home", hint: "Prioritized situations across the portfolio" };
-}
-
 export function TopBar({
   breadcrumb,
   person,
   onBreadcrumb,
+  onSearch,
 }: {
   breadcrumb: string[];
   person: { name: string; role: string };
   onBreadcrumb?: (item: string) => void;
+  onSearch?: (payload: ReturnType<typeof searchResultFor>) => void;
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -182,16 +149,20 @@ export function TopBar({
     setStaged(null);
   };
 
-  const go = (target: string) => {
+  // Every search — suggestion or free text — carries its own destination and
+  // its own result payload, so the page content changes for each one.
+  const run = (text: string, entry: SearchEntry | null) => {
+    const payload = searchResultFor(text.trim(), entry);
     closeSearch();
-    onBreadcrumb?.(target);
+    if (onSearch) onSearch(payload);
+    else onBreadcrumb?.(payload.result.target);
   };
 
   // First click stages the criteria in the box; a second click (or Enter, or
   // the Open button) runs it.
   const pick = (entry: SearchEntry) => {
     if (staged?.label === entry.label) {
-      go(entry.target);
+      run(entry.label, entry);
       return;
     }
     setQuery(entry.label);
@@ -202,9 +173,10 @@ export function TopBar({
 
   const runSearch = () => {
     if (!q) return;
-    if (staged) return go(staged.target);
-    if (results[0]) return go(results[0].target);
-    go(resolveCustom(query).target);
+    if (staged) return run(query, staged);
+    const exact = results.find((r) => r.label.toLowerCase() === q);
+    if (exact) return run(query, exact);
+    run(query, null);
   };
 
   useEffect(() => {
