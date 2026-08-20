@@ -561,7 +561,7 @@ export function Disclosure({
 /* ─────────────── Intelligence activity rail ─────────────── */
 
 export function IntelligenceRail({
-  items = ACTIVITY_RAIL,
+  items,
   title = "Customer Intelligence Activity",
 }: {
   items?: typeof ACTIVITY_RAIL;
@@ -652,7 +652,8 @@ function path(values: (number | null)[], min: number, max: number) {
 }
 
 export function AdoptionChart() {
-  const { labels, actual, target, projected, divergeIndex } = ADOPTION_SERIES;
+  const account = useAccount();
+  const { labels, actual, target, projected, divergeIndex } = account.adoption;
   const min = 55;
   const max = 95;
   const step = W / (labels.length - 1);
@@ -761,7 +762,8 @@ function Legend({ color, label, dashed }: { color: string; label: string; dashed
 }
 
 export function ValueChart() {
-  const { points, marks } = VALUE_SERIES;
+  const account = useAccount();
+  const { points, marks } = account.value;
   const min = 0;
   const max = 2.8;
   const step = W / (points.length - 1);
