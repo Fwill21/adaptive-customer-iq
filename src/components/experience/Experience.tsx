@@ -34,7 +34,7 @@ import {
 } from "./qbr-moments";
 import { PathSelector } from "./PathSelector";
 import { LeftNav, SearchResultPanel, Surface, TopBar } from "./shell";
-import type { SearchResultData, searchResultFor } from "@/lib/search-data";
+import type { SearchDest, SearchResultData } from "@/lib/search-data";
 import { ActionButton } from "./drawer";
 import {
   ConversationalWorkspace,
