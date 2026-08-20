@@ -33,7 +33,8 @@ import {
   QbrPrepareMe,
 } from "./qbr-moments";
 import { PathSelector } from "./PathSelector";
-import { LeftNav, Surface, TopBar } from "./shell";
+import { LeftNav, SearchResultPanel, Surface, TopBar } from "./shell";
+import type { SearchDest, SearchResultData } from "@/lib/search-data";
 import { ActionButton } from "./drawer";
 import {
   ConversationalWorkspace,
@@ -76,6 +77,16 @@ export function Experience() {
   const [role, setRole] = useState<Role>("CSM");
   // Work mode is how the person interacts. Hybrid best shows the future state.
   const [mode, setMode] = useState<ModeId>("hybrid");
+  // The last search Otto answered — every suggestion and custom query lands
+  // its own destination and its own result payload on the page.
+  const [searchResult, setSearchResult] = useState<SearchResultData | null>(null);
+
+  const applySearch = (payload: { dest: SearchDest; result: SearchResultData }) => {
+    setPath(payload.dest.path as PathId);
+    setStep(payload.dest.step);
+    setShowActivity(false);
+    setSearchResult(payload.result);
+  };
 
   const isQbr = path === "qbr";
   const isModes = path === "modes";
@@ -103,7 +114,7 @@ export function Experience() {
     crumbs[0] === "Home" ? crumbs : ["Home", ...crumbs];
 
   const openPath = (p: PathId) => {
-
+    setSearchResult(null);
     setPath(p);
     setStep(0);
     setRole("CSM");
@@ -115,6 +126,7 @@ export function Experience() {
   // From the path selector, any nav or breadcrumb item enters the primary
   // Quarter in Motion path at the closest matching moment.
   const navigateFromSelector = (item: string) => {
+    setSearchResult(null);
     if (item === "Home" || item === "Customer Success" || item === "Explore the future") {
       setPath("quarter");
       setStep(0);
@@ -134,6 +146,7 @@ export function Experience() {
           <TopBar
             breadcrumb={["Home", "Explore the future"]}
             onBreadcrumb={navigateFromSelector}
+            onSearch={applySearch}
             person={{ name: "Alex Rivera", role: "CSM · Strategic Enterprise" }}
           />
           <PathSelector onSelect={openPath} />
@@ -155,6 +168,7 @@ export function Experience() {
   const conversationalOnly = !isModes && mode === "conversational" && !!script;
 
   const navigate = (item: string) => {
+    setSearchResult(null);
     // Home and Insights are global anchors: they always resolve, whichever
     // path the presenter is currently in.
     if (item === "Home" || item === "Customer Success") {
@@ -206,8 +220,7 @@ export function Experience() {
               : (isQbr ? QBR_BREADCRUMBS : BREADCRUMBS)[moment.id] ?? ["Home"],
           )}
           onBreadcrumb={navigate}
-
-
+          onSearch={applySearch}
           person={
             role === "CSM"
               ? { name: "Alex Rivera", role: "CSM · Strategic Enterprise" }
@@ -218,13 +231,19 @@ export function Experience() {
 
         <main className="flex-1 px-6 pb-32 pt-8 lg:px-10 lg:pt-10">
           <div
-            key={`${path}-${moment.id}-${role}-${mode}`}
+            key={`${path}-${moment.id}-${role}-${mode}-${searchResult?.query ?? ""}`}
             className={cn(
               "soft-in mx-auto w-full max-w-[80rem]",
               showActivity && activityAvailable && "grid gap-6 lg:grid-cols-[1fr_19rem]",
             )}
           >
             <div className="min-w-0 space-y-6">
+              {searchResult && (
+                <SearchResultPanel
+                  result={searchResult}
+                  onDismiss={() => setSearchResult(null)}
+                />
+              )}
               {script && mode === "ui" && (
                 <UiDrivenNote script={script} contextLine={contextLine} />
               )}
