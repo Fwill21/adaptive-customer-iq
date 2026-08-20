@@ -768,7 +768,7 @@ export function OperatingModelClosing() {
       <Surface>
         <div className="rounded-2xl border border-otto/25 bg-otto-soft/25 p-5 md:p-7">
           <p className="text-center font-mono text-[10px] uppercase tracking-[0.16em] text-otto">
-            CSP on AINPX
+            CSP on LUX
           </p>
           <div className="mt-6 space-y-3">
             {OPERATING_MODEL_FULL.map((layer, i) => (

@@ -114,7 +114,7 @@ export function LeftNav({
         })}
       </ul>
       <p className="mt-auto px-2.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-        CSP on AINPX
+        CSP on LUX
       </p>
     </nav>
   );
