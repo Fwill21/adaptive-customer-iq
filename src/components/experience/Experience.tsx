@@ -77,6 +77,16 @@ export function Experience() {
   const [role, setRole] = useState<Role>("CSM");
   // Work mode is how the person interacts. Hybrid best shows the future state.
   const [mode, setMode] = useState<ModeId>("hybrid");
+  // The last search Otto answered — every suggestion and custom query lands
+  // its own destination and its own result payload on the page.
+  const [searchResult, setSearchResult] = useState<SearchResultData | null>(null);
+
+  const applySearch = (payload: { dest: SearchDest; result: SearchResultData }) => {
+    setPath(payload.dest.path as PathId);
+    setStep(payload.dest.step);
+    setShowActivity(false);
+    setSearchResult(payload.result);
+  };
 
   const isQbr = path === "qbr";
   const isModes = path === "modes";
