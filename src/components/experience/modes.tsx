@@ -9,8 +9,8 @@ import {
   MODE_CONTEXT_LINE,
   MODE_DEMO_CLOSE,
   MODE_DEMO_SEQUENCE,
-  MODE_FALLBACK_ANSWER,
   MODE_PROMPT_ANSWERS,
+  promptResponse,
 
   MODE_SCRIPTS,
   OPERATING_MODEL_FULL,
@@ -27,17 +27,6 @@ import { ActionButton, useInfoDrawer } from "./drawer";
 export function scriptFor(path: string, momentId: number): ModeScript | undefined {
   return MODE_SCRIPTS[`${path}-${momentId}`];
 }
-
-/** Resolve the answer for a question: prompt-specific first, then the
- * moment's headline answer, then the generic context reminder. */
-function answerFor(script: ModeScript, question: string, allowPrimary = true): string[] {
-  const q = question.trim();
-  const specific = MODE_PROMPT_ANSWERS[q];
-  if (specific) return specific;
-  if (q.toLowerCase() === script.ask.toLowerCase()) return script.answer;
-  return allowPrimary ? script.answer : MODE_FALLBACK_ANSWER;
-}
-
 
 /* ─────────────── Compact work-mode control (presentation) ─────────────── */
 
@@ -78,9 +67,15 @@ export function WorkModeControl({
 
 /* ─────────────── Shared generated-view surface ─────────────── */
 
-function GeneratedView({ script }: { script: ModeScript }) {
+function GeneratedView({
+  script,
+  view,
+}: {
+  script: ModeScript;
+  view?: { title: string; note: string; metrics: { value: string; label: string }[]; connection: string; actions: string[] };
+}) {
   const [acted, setActed] = useState<string | null>(null);
-  const g = script.generated;
+  const g = view ?? script.generated;
   return (
     <div className="soft-in rounded-2xl border border-otto/25 bg-otto-soft/40 p-5 md:p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -141,7 +136,9 @@ export function ConversationalWorkspace({
   role: string;
 }) {
   const [value, setValue] = useState("");
-  const [turns, setTurns] = useState<{ q: string; a: string[]; generated: boolean }[]>([]);
+  const [turns, setTurns] = useState<
+    { q: string; a: string[]; view: ReturnType<typeof promptResponse>["generated"] }[]
+  >([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -151,15 +148,8 @@ export function ConversationalWorkspace({
   const submit = (q: string) => {
     const question = q.trim();
     if (!question) return;
-    const primary = turns.length === 0;
-    setTurns((t) => [
-      ...t,
-      {
-        q: question,
-        a: answerFor(script, question, primary),
-        generated: true,
-      },
-    ]);
+    const { lines, generated } = promptResponse(script, question);
+    setTurns((t) => [...t, { q: question, a: lines, view: generated }]);
     setValue("");
 
     inputRef.current?.focus();
@@ -250,7 +240,7 @@ export function ConversationalWorkspace({
                   {line}
                 </p>
               ))}
-              {t.generated && <GeneratedView script={script} />}
+              <GeneratedView key={t.view.title} script={script} view={t.view} />
             </div>
           </div>
         </div>
@@ -277,7 +267,7 @@ export function HybridStrip({
     setValue("");
   };
 
-  const answer = asked ? answerFor(script, asked) : [];
+  const response = asked ? promptResponse(script, asked) : null;
 
 
   return (
@@ -355,12 +345,14 @@ export function HybridStrip({
                 <OttoMark size={16} />
               </span>
               <div className="min-w-0 flex-1 space-y-4">
-                {answer.map((line) => (
+                {response?.lines.map((line) => (
                   <p key={line} className="text-[14px] leading-relaxed">
                     {line}
                   </p>
                 ))}
-                <GeneratedView script={script} />
+                {response && (
+                  <GeneratedView key={response.generated.title} script={script} view={response.generated} />
+                )}
               </div>
             </div>
           </div>
