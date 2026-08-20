@@ -18,6 +18,7 @@ import {
   resolveCustom,
   searchResultFor,
   type SearchEntry,
+  type SearchResultData,
 } from "@/lib/search-data";
 
 /** Every metric in the environment is explainable — Otto can always show its reasoning. */
