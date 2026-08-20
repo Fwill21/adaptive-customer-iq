@@ -679,7 +679,7 @@ const PROMPT_INTENTS: PromptIntent[] = [
   {
     id: "prepare",
     match: /prepare|prep|agenda|meeting|deck|briefing|talk track/i,
-    title: (b) => `${b} · prepared материал`,
+    title: (b) => `${b} · prepared`,
     note: "Decision-first preparation, not a slide dump",
     lead: [
       "Prepared as decisions to be made, with the supporting evidence behind each one.",
