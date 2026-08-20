@@ -76,12 +76,13 @@ function ReadinessDial({ value, projected }: { value: number; projected?: number
 /* ═════════════════ 01 · QBR Approaching ═════════════════ */
 
 export function QbrApproaching() {
+  const account = useAccount();
   const D = useQbrData();
   const drawer = useDrawer();
   return (
     <div className="space-y-6">
       <PageHeading
-        title="Acme Corporation"
+        title={account.name}
         meta="Strategic Account · Business Review · Q3 2026"
         intent="Otto surfaced the upcoming business review before it was requested."
       />
@@ -89,9 +90,9 @@ export function QbrApproaching() {
       <div className="grid gap-6 lg:grid-cols-[1.62fr_1fr]">
         <div className="space-y-6">
           <Surface className="space-y-7">
-            <OttoVoice>Your Acme QBR is in 12 days.</OttoVoice>
+            <OttoVoice>Your {account.short} QBR is in 12 days.</OttoVoice>
             <p className="max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
-              Acme is on track for its QBR. Adoption recovered this quarter and all four success
+              {account.short} is on track for its QBR. Adoption recovered this quarter and all four success
               milestones were completed. The value story is strong, but one outcome still needs
               validation and the new executive sponsor has not confirmed next-quarter priorities.
             </p>
@@ -125,7 +126,7 @@ export function QbrApproaching() {
                 Review QBR readiness
               </ActionButton>
               <ActionButton onClick={() => drawer.open("qbr:ask", ASK_ACME_DETAIL)}>
-                Ask Otto about Acme
+                Ask Otto about {account.short}
               </ActionButton>
             </div>
           </Surface>
@@ -152,10 +153,10 @@ export function QbrApproaching() {
 }
 
 const ASK_ACME_DETAIL = {
-  title: "Ask Otto about Acme",
+  title: `Ask Otto about ${account.short}`,
   meta: "Continuous customer understanding",
   summary:
-    "Otto already holds Acme's goals, outcomes, adoption, value, support activity, stakeholders, commitments, and meeting history.",
+    `Otto already holds ${account.short}'s goals, outcomes, adoption, value, support activity, stakeholders, commitments, and meeting history.`,
   sections: [
     {
       label: "What Otto knows today",
@@ -181,13 +182,14 @@ const ASK_ACME_DETAIL = {
 /* ═════════════════ 02 · Build the Story ═════════════════ */
 
 export function QbrBuildStory() {
+  const account = useAccount();
   const D = useQbrData();
   const info = useInfoDrawer();
   const drawer = useDrawer();
   return (
     <div className="space-y-6">
       <PageHeading
-        title="Acme Q3 Value Story"
+        title={`${account.short} Q3 Value Story`}
         meta="Synthesized from this quarter's customer intelligence"
       />
 
@@ -195,7 +197,7 @@ export function QbrBuildStory() {
         <div className="space-y-6">
           <Surface className="space-y-7">
             <OttoVoice>
-              Based on Acme's goals, outcomes, activity, and customer conversations, I recommend
+              Based on {account.short}'s goals, outcomes, activity, and customer conversations, I recommend
               centering the QBR around three outcomes.
             </OttoVoice>
 
@@ -253,7 +255,7 @@ export function QbrBuildStory() {
                             items: [
                               "Product telemetry for the affected workflows",
                               "Deployment and configuration change history",
-                              "Outcome records linked to Acme's committed objectives",
+                              `Outcome records linked to ${account.short}'s committed objectives`,
                             ],
                           },
                         ],
@@ -307,6 +309,7 @@ export function QbrBuildStory() {
 /* ═════════════════ 03 · Close the Gaps ═════════════════ */
 
 export function QbrCloseGaps() {
+  const account = useAccount();
   const D = useQbrData();
   const drawer = useDrawer();
   const closed = D.QBR_GAPS.filter((g) => drawer.isConfirmed(`gap:${g.key}`)).length;
@@ -316,7 +319,7 @@ export function QbrCloseGaps() {
     <div className="space-y-6">
       <PageHeading
         title="Before this QBR is ready"
-        meta="Acme Corporation · QBR readiness"
+        meta={`${account.name} · QBR readiness`}
         intent="Otto understands not only what it knows, but what is still missing."
       />
 
@@ -411,6 +414,7 @@ export function QbrCloseGaps() {
 /* ═════════════════ 04 · Coordinate the Team ═════════════════ */
 
 export function QbrCoordinate({ role }: { role: Role }) {
+  const account = useAccount();
   const D = useQbrData();
   const info = useInfoDrawer();
   const [state, setState] = useState<"idle" | "working" | "done">("idle");
@@ -423,7 +427,10 @@ export function QbrCoordinate({ role }: { role: Role }) {
 
   return (
     <div className="space-y-6">
-      <PageHeading title="Acme QBR preparation" meta="Cross-functional contributions" />
+      <PageHeading
+        title={`${account.short} QBR preparation`}
+        meta="Cross-functional contributions"
+      />
 
       <div className="grid gap-6 lg:grid-cols-[1.62fr_1fr]">
         <div className="space-y-6">
@@ -529,14 +536,15 @@ export function QbrCoordinate({ role }: { role: Role }) {
 }
 
 function TsmQbrContribution() {
+  const account = useAccount();
   const D = useQbrData();
   const drawer = useDrawer();
   return (
     <div className="space-y-6">
       <PageHeading
-        title="Acme QBR Contribution"
+        title={`${account.short} QBR Contribution`}
         meta="Maya Chen · TSM · Technical Success"
-        intent="Alex is preparing Acme's Q3 Business Review."
+        intent={`Alex is preparing ${account.short}'s Q3 Business Review.`}
       />
 
       <div className="grid gap-6 lg:grid-cols-[1.62fr_1fr]">
@@ -598,6 +606,7 @@ function TsmQbrContribution() {
 /* ═════════════════ 05 · Prepare Me ═════════════════ */
 
 export function QbrPrepareMe({ role }: { role: Role }) {
+  const account = useAccount();
   const D = useQbrData();
   const info = useInfoDrawer();
   const drawer = useDrawer();
@@ -614,7 +623,7 @@ export function QbrPrepareMe({ role }: { role: Role }) {
               <div>
                 <span className="eyebrow text-otto">Workflow awareness</span>
                 <h1 className="mt-2 text-[1.6rem] font-semibold leading-tight tracking-tight">
-                  Your Acme QBR is ready
+                  Your {account.short} QBR is ready
                 </h1>
                 <p className="mt-2 text-[14px] text-muted-foreground">
                   All critical evidence and team contributions are available.
@@ -626,7 +635,7 @@ export function QbrPrepareMe({ role }: { role: Role }) {
 
           <div className="flex justify-end">
             <p className="rounded-2xl rounded-br-sm bg-primary px-4 py-2.5 text-[14px] text-primary-foreground">
-              Prepare me for the Acme QBR.
+              Prepare me for the {account.short} QBR.
             </p>
           </div>
 
@@ -657,7 +666,7 @@ export function QbrPrepareMe({ role }: { role: Role }) {
                       onClick={() =>
                         info.open(`decision-needed:${d}`, {
                           title: "Decision the QBR should produce",
-                          meta: `Priority ${i + 1} · Acme Corporation`,
+                          meta: `Priority ${i + 1} · ${account.name}`,
                           summary: d,
                           sections: [
                             {
@@ -697,7 +706,7 @@ export function QbrPrepareMe({ role }: { role: Role }) {
           </Surface>
 
           <Surface className="space-y-5">
-            <SectionTitle meta="Grounded in Acme's context">Be ready for these questions</SectionTitle>
+            <SectionTitle meta={`Grounded in ${account.short}'s context`}>Be ready for these questions</SectionTitle>
             <ul className="space-y-3">
               {D.QBR_COACH.map((q) => {
                 const open = coach.includes(q.question);
@@ -772,6 +781,7 @@ export function QbrPrepareMe({ role }: { role: Role }) {
 /* ═════════════════ 06 · Lead the QBR (meeting mode) ═════════════════ */
 
 export function QbrMeetingMode() {
+  const account = useAccount();
   const D = useQbrData();
   const drawer = useDrawer();
   const [asked, setAsked] = useState(false);
@@ -783,7 +793,7 @@ export function QbrMeetingMode() {
           Customer Success · Q3 2026
         </p>
         <h1 className="mt-4 text-balance text-[2rem] font-semibold leading-tight tracking-tight md:text-[2.4rem]">
-          Acme Q3 Business Review
+          {account.short} Q3 Business Review
         </h1>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           {D.QBR_MEETING_FOCUS.map((f) => (
@@ -868,6 +878,7 @@ export function QbrMeetingMode() {
 /* ═════════════════ 07 · Capture Outcomes ═════════════════ */
 
 export function QbrCaptureOutcomes() {
+  const account = useAccount();
   const D = useQbrData();
   const [confirmed, setConfirmed] = useState(false);
 
@@ -875,7 +886,7 @@ export function QbrCaptureOutcomes() {
     <div className="space-y-6">
       <PageHeading
         title="QBR outcomes captured"
-        meta="Acme Corporation · Aug 21, 2026"
+        meta={`${account.name} · Aug 21, 2026`}
         intent="Otto interpreted the conversation into structured customer understanding."
       />
 
@@ -936,6 +947,7 @@ export function QbrCaptureOutcomes() {
 /* ═════════════════ 08 · Activate Next Quarter ═════════════════ */
 
 export function QbrActivateNextQuarter({ onContinue }: { onContinue?: () => void }) {
+  const account = useAccount();
   const D = useQbrData();
   const drawer = useDrawer();
   const [adjust, setAdjust] = useState(false);
@@ -944,7 +956,7 @@ export function QbrActivateNextQuarter({ onContinue }: { onContinue?: () => void
     <div className="space-y-6">
       <PageHeading
         title="Turn QBR decisions into the next success plan"
-        meta="Acme Corporation · Q4 2026"
+        meta={`${account.name} · Q4 2026`}
       />
 
       <div className="grid gap-6 lg:grid-cols-[1.62fr_1fr]">
