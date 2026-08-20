@@ -382,7 +382,6 @@ export function UiDrivenNote({ script, contextLine }: { script: ModeScript; cont
 /* ═════════ Leadership path: Three Ways to Work ═════════ */
 
 export function ModesOverview({
-  const account = useAccount();
   mode,
   onSetMode,
 }: {
@@ -390,6 +389,7 @@ export function ModesOverview({
   onSetMode?: (m: ModeId) => void;
 }) {
   const info = useInfoDrawer();
+  const account = useAccount();
   return (
     <div className="space-y-6">
       <header className="rise">
