@@ -1,38 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import {
-  QBR_ACTIVITY_RAIL,
-  QBR_AGENT_CHAIN,
-  QBR_BRIEFING,
-  QBR_CAPTURE_CONFIRMED,
-  QBR_COACH,
-  QBR_CONTRIBUTIONS,
-  QBR_COORDINATION_CONFIRMED,
-  QBR_DECISIONS_NEEDED,
-  QBR_GAPS,
-  QBR_INTERPRETED,
-  QBR_LIVE_ANSWER,
-  QBR_LIVE_OPPORTUNITY,
-  QBR_LIVE_QUESTION,
-  QBR_MEETING_FOCUS,
-  QBR_MEETING_METRICS,
-  QBR_NARRATIVE_FLOW,
-  QBR_OPEN_COMMITMENT,
-  QBR_OUTCOMES,
-  QBR_OUTCOME_COUNTS,
-  QBR_OUTCOME_DETAILS,
-  QBR_READINESS_DETAIL,
-  QBR_READINESS_INDICATORS,
-  QBR_STORY_ARC,
-  Q4_PLAN_DETAIL,
-  Q4_PLAN_SUMMARY,
-  Q4_PRIORITIES,
-  QBR_CLOSING_BEFORE,
-  QBR_CLOSING_FUTURE,
-  TSM_QBR_CONTEXT,
-  TSM_QBR_DETAIL,
-  TSM_QBR_REVIEW,
-} from "@/lib/qbr-data";
+import { useQbrData } from "@/lib/qbr-account";
+import { useAccount } from "@/lib/account-context";
 import { AGENTS } from "@/lib/story-data";
 import { AgentDots, OttoMark, OttoVoice, PrimaryAction } from "./primitives";
 import { ActionButton, DetailDrawer, useDrawer, useInfoDrawer } from "./drawer";
@@ -55,7 +24,8 @@ import type { Role } from "./moments";
 import { ArrowRight, Check } from "lucide-react";
 
 function QbrRail() {
-  return <IntelligenceRail items={QBR_ACTIVITY_RAIL} />;
+  const D = useQbrData();
+  return <IntelligenceRail items={D.QBR_ACTIVITY_RAIL} />;
 }
 
 /** Circular readiness dial — restrained Horizon treatment. */
@@ -106,6 +76,7 @@ function ReadinessDial({ value, projected }: { value: number; projected?: number
 /* ═════════════════ 01 · QBR Approaching ═════════════════ */
 
 export function QbrApproaching() {
+  const D = useQbrData();
   const drawer = useDrawer();
   return (
     <div className="space-y-6">
@@ -131,7 +102,7 @@ export function QbrApproaching() {
                 <ReadinessDial value={78} />
               </div>
               <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-6 border-t border-border pt-6 md:grid-cols-5">
-                {QBR_READINESS_INDICATORS.map((i) => (
+                {D.QBR_READINESS_INDICATORS.map((i) => (
                   <div key={i.label}>
                     <p className="text-[1.4rem] font-semibold leading-none tracking-tight">
                       {i.value}
@@ -147,7 +118,7 @@ export function QbrApproaching() {
             <div className="flex flex-wrap items-center gap-3 border-t border-border pt-6">
               <ActionButton
                 variant="solid"
-                onClick={() => drawer.open("qbr:readiness", QBR_READINESS_DETAIL)}
+                onClick={() => drawer.open("qbr:readiness", D.QBR_READINESS_DETAIL)}
                 done={drawer.isConfirmed("qbr:readiness")}
                 doneLabel="Readiness plan accepted"
               >
@@ -210,6 +181,7 @@ const ASK_ACME_DETAIL = {
 /* ═════════════════ 02 · Build the Story ═════════════════ */
 
 export function QbrBuildStory() {
+  const D = useQbrData();
   const info = useInfoDrawer();
   const drawer = useDrawer();
   return (
@@ -228,7 +200,7 @@ export function QbrBuildStory() {
             </OttoVoice>
 
             <ul className="divide-y divide-border border-y border-border">
-              {QBR_OUTCOMES.map((o, i) => (
+              {D.QBR_OUTCOMES.map((o, i) => (
                 <li key={o.title} className="flex flex-wrap items-start justify-between gap-5 py-6">
                   <div className="min-w-0 max-w-md space-y-2">
                     <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
@@ -248,7 +220,7 @@ export function QbrBuildStory() {
                       {o.metric}
                     </p>
                     <ActionButton
-                      onClick={() => drawer.open(`outcome:${o.title}`, QBR_OUTCOME_DETAILS[o.title]!)}
+                      onClick={() => drawer.open(`outcome:${o.title}`, D.QBR_OUTCOME_DETAILS[o.title]!)}
                       done={drawer.isConfirmed(`outcome:${o.title}`)}
                       doneLabel="In narrative"
                     >
@@ -265,7 +237,7 @@ export function QbrBuildStory() {
               The story behind the numbers
             </SectionTitle>
             <ol className="space-y-3">
-              {QBR_STORY_ARC.map((s, i) => (
+              {D.QBR_STORY_ARC.map((s, i) => (
                 <li key={s.label}>
                   <button
                     type="button"
@@ -296,7 +268,7 @@ export function QbrBuildStory() {
                       {s.link}
                     </p>
                   </button>
-                  {i < QBR_STORY_ARC.length - 1 && (
+                  {i < D.QBR_STORY_ARC.length - 1 && (
                     <p className="py-1.5 text-center text-muted-foreground" aria-hidden="true">
                       ↓
                     </p>
@@ -335,8 +307,9 @@ export function QbrBuildStory() {
 /* ═════════════════ 03 · Close the Gaps ═════════════════ */
 
 export function QbrCloseGaps() {
+  const D = useQbrData();
   const drawer = useDrawer();
-  const closed = QBR_GAPS.filter((g) => drawer.isConfirmed(`gap:${g.key}`)).length;
+  const closed = D.QBR_GAPS.filter((g) => drawer.isConfirmed(`gap:${g.key}`)).length;
   const readiness = 78 + closed * 9;
 
   return (
@@ -349,7 +322,7 @@ export function QbrCloseGaps() {
 
       <div className="grid gap-6 lg:grid-cols-[1.62fr_1fr]">
         <div className="space-y-6">
-          {QBR_GAPS.map((g) => (
+          {D.QBR_GAPS.map((g) => (
             <Surface key={g.key} className="space-y-5">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0 max-w-xl">
@@ -400,12 +373,12 @@ export function QbrCloseGaps() {
             <SectionTitle meta="Monitored by Otto">Open commitment</SectionTitle>
             <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-4">
               <div>
-                <p className="text-[15px] font-semibold">{QBR_OPEN_COMMITMENT.title}</p>
+                <p className="text-[15px] font-semibold">{D.QBR_OPEN_COMMITMENT.title}</p>
                 <p className="mt-1 text-[13px] text-muted-foreground">
-                  Owner: {QBR_OPEN_COMMITMENT.owner} · Due: {QBR_OPEN_COMMITMENT.due}
+                  Owner: {D.QBR_OPEN_COMMITMENT.owner} · Due: {D.QBR_OPEN_COMMITMENT.due}
                 </p>
               </div>
-              <StatusPill tone="quiet">{QBR_OPEN_COMMITMENT.status}</StatusPill>
+              <StatusPill tone="quiet">{D.QBR_OPEN_COMMITMENT.status}</StatusPill>
             </div>
           </Surface>
         </div>
@@ -438,6 +411,7 @@ export function QbrCloseGaps() {
 /* ═════════════════ 04 · Coordinate the Team ═════════════════ */
 
 export function QbrCoordinate({ role }: { role: Role }) {
+  const D = useQbrData();
   const info = useInfoDrawer();
   const [state, setState] = useState<"idle" | "working" | "done">("idle");
   if (role === "TSM") return <TsmQbrContribution />;
@@ -466,7 +440,7 @@ export function QbrCoordinate({ role }: { role: Role }) {
             </div>
 
             <ul className="divide-y divide-border border-y border-border">
-              {QBR_CONTRIBUTIONS.map((c) => (
+              {D.QBR_CONTRIBUTIONS.map((c) => (
                 <li key={c.title} className="flex flex-wrap items-start justify-between gap-4 py-5">
                   <button
                     type="button"
@@ -533,7 +507,7 @@ export function QbrCoordinate({ role }: { role: Role }) {
             )}
             {state === "done" && (
               <ul className="rise space-y-2.5">
-                {QBR_COORDINATION_CONFIRMED.map((c, i) => (
+                {D.QBR_COORDINATION_CONFIRMED.map((c, i) => (
                   <li
                     key={c}
                     className="rise flex items-center gap-3 text-[14px]"
@@ -555,6 +529,7 @@ export function QbrCoordinate({ role }: { role: Role }) {
 }
 
 function TsmQbrContribution() {
+  const D = useQbrData();
   const drawer = useDrawer();
   return (
     <div className="space-y-6">
@@ -576,7 +551,7 @@ function TsmQbrContribution() {
             </div>
 
             <div className="grid grid-cols-2 gap-6 border-y border-border py-6 md:grid-cols-4">
-              {TSM_QBR_CONTEXT.map((c) => (
+              {D.TSM_QBR_CONTEXT.map((c) => (
                 <Kpi key={c.label} value={c.value} label={c.label} />
               ))}
             </div>
@@ -584,7 +559,7 @@ function TsmQbrContribution() {
             <div>
               <SectionTitle meta="Otto">Recommended review</SectionTitle>
               <ul className="mt-4 divide-y divide-border border-t border-border">
-                {TSM_QBR_REVIEW.map((r) => (
+                {D.TSM_QBR_REVIEW.map((r) => (
                   <li key={r} className="py-3.5 text-[15px]">
                     {r}
                   </li>
@@ -594,7 +569,7 @@ function TsmQbrContribution() {
 
             <ActionButton
               variant="solid"
-              onClick={() => drawer.open("tsm:qbr", TSM_QBR_DETAIL)}
+              onClick={() => drawer.open("tsm:qbr", D.TSM_QBR_DETAIL)}
               done={drawer.isConfirmed("tsm:qbr")}
               doneLabel="Contribution submitted"
             >
@@ -623,6 +598,7 @@ function TsmQbrContribution() {
 /* ═════════════════ 05 · Prepare Me ═════════════════ */
 
 export function QbrPrepareMe({ role }: { role: Role }) {
+  const D = useQbrData();
   const info = useInfoDrawer();
   const drawer = useDrawer();
   const [coach, setCoach] = useState<string[]>([]);
@@ -663,7 +639,7 @@ export function QbrPrepareMe({ role }: { role: Role }) {
             </div>
 
             <dl className="divide-y divide-border">
-              {QBR_BRIEFING.map(([label, body]) => (
+              {D.QBR_BRIEFING.map(([label, body]) => (
                 <div key={label} className="grid gap-1 py-4 md:grid-cols-[14rem_1fr] md:gap-6">
                   <dt className="eyebrow">{label}</dt>
                   <dd className="text-[15px] leading-snug">{body}</dd>
@@ -674,7 +650,7 @@ export function QbrPrepareMe({ role }: { role: Role }) {
             <div className="rounded-2xl border border-otto/25 bg-otto-soft px-6 py-6">
               <span className="eyebrow text-otto">What we need from this QBR</span>
               <ol className="mt-4 space-y-3">
-                {QBR_DECISIONS_NEEDED.map((d, i) => (
+                {D.QBR_DECISIONS_NEEDED.map((d, i) => (
                   <li key={d}>
                     <button
                       type="button"
@@ -723,7 +699,7 @@ export function QbrPrepareMe({ role }: { role: Role }) {
           <Surface className="space-y-5">
             <SectionTitle meta="Grounded in Acme's context">Be ready for these questions</SectionTitle>
             <ul className="space-y-3">
-              {QBR_COACH.map((q) => {
+              {D.QBR_COACH.map((q) => {
                 const open = coach.includes(q.question);
                 return (
                   <li key={q.question} className="rounded-xl border border-border bg-background">
@@ -796,6 +772,7 @@ export function QbrPrepareMe({ role }: { role: Role }) {
 /* ═════════════════ 06 · Lead the QBR (meeting mode) ═════════════════ */
 
 export function QbrMeetingMode() {
+  const D = useQbrData();
   const drawer = useDrawer();
   const [asked, setAsked] = useState(false);
 
@@ -809,7 +786,7 @@ export function QbrMeetingMode() {
           Acme Q3 Business Review
         </h1>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          {QBR_MEETING_FOCUS.map((f) => (
+          {D.QBR_MEETING_FOCUS.map((f) => (
             <span
               key={f}
               className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-[12px]"
@@ -823,7 +800,7 @@ export function QbrMeetingMode() {
       <Surface className="p-8 md:p-10">
         <span className="eyebrow">Q3 outcomes</span>
         <div className="mt-6 grid grid-cols-2 gap-8 md:grid-cols-4">
-          {QBR_MEETING_METRICS.map((m) => (
+          {D.QBR_MEETING_METRICS.map((m) => (
             <div key={m.label}>
               <p className="text-[2rem] font-semibold leading-none tracking-tight">{m.value}</p>
               <p className="mt-2 text-[13px] leading-snug text-muted-foreground">{m.label}</p>
@@ -833,7 +810,7 @@ export function QbrMeetingMode() {
       </Surface>
 
       <ol className="space-y-3">
-        {QBR_NARRATIVE_FLOW.map((s, i) => (
+        {D.QBR_NARRATIVE_FLOW.map((s, i) => (
           <li key={s.title}>
             <Surface className="p-6 md:p-7">
               <span className="eyebrow">{String(i + 1).padStart(2, "0")}</span>
@@ -842,7 +819,7 @@ export function QbrMeetingMode() {
               </p>
               <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{s.body}</p>
             </Surface>
-            {i < QBR_NARRATIVE_FLOW.length - 1 && (
+            {i < D.QBR_NARRATIVE_FLOW.length - 1 && (
               <p className="py-1.5 text-center text-muted-foreground" aria-hidden="true">
                 ↓
               </p>
@@ -854,7 +831,7 @@ export function QbrMeetingMode() {
       <Surface className="space-y-5">
         <div>
           <span className="eyebrow">Live in the room</span>
-          <p className="mt-2 text-[1.05rem] font-medium leading-snug">“{QBR_LIVE_QUESTION}”</p>
+          <p className="mt-2 text-[1.05rem] font-medium leading-snug">“{D.QBR_LIVE_QUESTION}”</p>
         </div>
         {!asked ? (
           <ActionButton onClick={() => setAsked(true)}>Ask Otto</ActionButton>
@@ -864,11 +841,11 @@ export function QbrMeetingMode() {
               <span className="mt-0.5 shrink-0 text-otto">
                 <OttoMark size={16} />
               </span>
-              <p className="text-[15px] leading-relaxed">{QBR_LIVE_ANSWER}</p>
+              <p className="text-[15px] leading-relaxed">{D.QBR_LIVE_ANSWER}</p>
             </div>
             <ActionButton
               variant="solid"
-              onClick={() => drawer.open("qbr:live", QBR_LIVE_OPPORTUNITY)}
+              onClick={() => drawer.open("qbr:live", D.QBR_LIVE_OPPORTUNITY)}
               done={drawer.isConfirmed("qbr:live")}
               doneLabel="Added to Q4 plan"
             >
@@ -891,6 +868,7 @@ export function QbrMeetingMode() {
 /* ═════════════════ 07 · Capture Outcomes ═════════════════ */
 
 export function QbrCaptureOutcomes() {
+  const D = useQbrData();
   const [confirmed, setConfirmed] = useState(false);
 
   return (
@@ -905,7 +883,7 @@ export function QbrCaptureOutcomes() {
         <div className="space-y-6">
           <Surface>
             <div className="grid grid-cols-2 gap-x-6 gap-y-6 md:grid-cols-5">
-              {QBR_OUTCOME_COUNTS.map((c) => (
+              {D.QBR_OUTCOME_COUNTS.map((c) => (
                 <div key={c.label}>
                   <p className="text-[1.6rem] font-semibold leading-none tracking-tight">
                     {c.value}
@@ -919,7 +897,7 @@ export function QbrCaptureOutcomes() {
           <Surface className="space-y-6">
             <SectionTitle meta="Interpreted, not transcribed">What Otto understood</SectionTitle>
             <ul className="divide-y divide-border border-t border-border">
-              {QBR_INTERPRETED.map((o) => (
+              {D.QBR_INTERPRETED.map((o) => (
                 <li key={o.body} className="space-y-1.5 py-5">
                   <span className="eyebrow text-otto">{o.kind}</span>
                   <p className="text-[15px] leading-snug">{o.body}</p>
@@ -934,7 +912,7 @@ export function QbrCaptureOutcomes() {
               </PrimaryAction>
             ) : (
               <ul className="rise space-y-2.5 border-t border-border pt-5">
-                {QBR_CAPTURE_CONFIRMED.map((c, i) => (
+                {D.QBR_CAPTURE_CONFIRMED.map((c, i) => (
                   <li
                     key={c}
                     className="rise flex items-center gap-3 text-[14px]"
@@ -958,6 +936,7 @@ export function QbrCaptureOutcomes() {
 /* ═════════════════ 08 · Activate Next Quarter ═════════════════ */
 
 export function QbrActivateNextQuarter({ onContinue }: { onContinue?: () => void }) {
+  const D = useQbrData();
   const drawer = useDrawer();
   const [adjust, setAdjust] = useState(false);
 
@@ -973,7 +952,7 @@ export function QbrActivateNextQuarter({ onContinue }: { onContinue?: () => void
           <Surface className="space-y-7">
             <OttoVoice>Based on today's QBR, I recommend three Q4 priorities.</OttoVoice>
             <ol className="divide-y divide-border border-y border-border">
-              {Q4_PRIORITIES.map((p, i) => (
+              {D.Q4_PRIORITIES.map((p, i) => (
                 <li key={p.title} className="space-y-1.5 py-5">
                   <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                     Priority {i + 1}
@@ -987,14 +966,14 @@ export function QbrActivateNextQuarter({ onContinue }: { onContinue?: () => void
             <div>
               <SectionTitle meta="Generated from QBR outcomes">Proposed Q4 Success Plan</SectionTitle>
               <div className="mt-5">
-                <ScoreCard items={Q4_PLAN_SUMMARY} />
+                <ScoreCard items={D.Q4_PLAN_SUMMARY} />
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-3 border-t border-border pt-6">
               <ActionButton
                 variant="solid"
-                onClick={() => drawer.open("q4:plan", Q4_PLAN_DETAIL)}
+                onClick={() => drawer.open("q4:plan", D.Q4_PLAN_DETAIL)}
                 done={drawer.isConfirmed("q4:plan")}
                 doneLabel="Q4 plan approved"
               >
@@ -1028,12 +1007,12 @@ export function QbrActivateNextQuarter({ onContinue }: { onContinue?: () => void
               <div>
                 <span className="eyebrow">Before</span>
                 <p className="mt-2 text-[15px] leading-snug text-muted-foreground">
-                  {QBR_CLOSING_BEFORE}
+                  {D.QBR_CLOSING_BEFORE}
                 </p>
               </div>
               <div>
                 <span className="eyebrow text-otto">Future</span>
-                <p className="mt-2 text-[15px] font-medium leading-snug">{QBR_CLOSING_FUTURE}</p>
+                <p className="mt-2 text-[15px] font-medium leading-snug">{D.QBR_CLOSING_FUTURE}</p>
               </div>
             </div>
             <p className="border-t border-border pt-6 text-[15px] font-semibold">
@@ -1072,12 +1051,13 @@ export function QbrActivateNextQuarter({ onContinue }: { onContinue?: () => void
 /* ═════════════════ AI activity overlay for the QBR path ═════════════════ */
 
 export function QbrAgentChainPanel() {
+  const D = useQbrData();
   const info = useInfoDrawer();
   return (
     <Surface className="lg:sticky lg:top-6">
       <SectionTitle meta="Leadership view">AI activity</SectionTitle>
       <ol className="mt-5 space-y-4">
-        {QBR_AGENT_CHAIN.map((a, i) => (
+        {D.QBR_AGENT_CHAIN.map((a, i) => (
           <li key={a.agent} className="relative pl-6">
             <span
               className={cn(
@@ -1085,7 +1065,7 @@ export function QbrAgentChainPanel() {
                 a.agent === "Otto" ? "bg-otto" : "bg-agent",
               )}
             />
-            {i < QBR_AGENT_CHAIN.length - 1 && (
+            {i < D.QBR_AGENT_CHAIN.length - 1 && (
               <span className="absolute left-[3.5px] top-4 h-[calc(100%+0.5rem)] w-px bg-border" />
             )}
             <button
