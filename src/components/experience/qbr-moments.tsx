@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useQbrData } from "@/lib/qbr-account";
-import { useAccount } from "@/lib/account-context";
+import { personalizeData, useAccount } from "@/lib/account-context";
 import { AGENTS } from "@/lib/story-data";
 import { AgentDots, OttoMark, OttoVoice, PrimaryAction } from "./primitives";
 import { ActionButton, DetailDrawer, useDrawer, useInfoDrawer } from "./drawer";
@@ -125,7 +125,7 @@ export function QbrApproaching() {
               >
                 Review QBR readiness
               </ActionButton>
-              <ActionButton onClick={() => drawer.open("qbr:ask", ASK_ACME_DETAIL)}>
+              <ActionButton onClick={() => drawer.open("qbr:ask", personalizeData(askAccountDetail(account), account))}>
                 Ask Otto about {account.short}
               </ActionButton>
             </div>
@@ -152,7 +152,7 @@ export function QbrApproaching() {
   );
 }
 
-const ASK_ACME_DETAIL = {
+const askAccountDetail = (account: { name: string; short: string }) => ({
   title: `Ask Otto about ${account.short}`,
   meta: "Continuous customer understanding",
   summary:
@@ -177,7 +177,7 @@ const ASK_ACME_DETAIL = {
       ],
     },
   ],
-};
+});
 
 /* ═════════════════ 02 · Build the Story ═════════════════ */
 
