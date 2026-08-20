@@ -33,7 +33,8 @@ import {
   QbrPrepareMe,
 } from "./qbr-moments";
 import { PathSelector } from "./PathSelector";
-import { LeftNav, Surface, TopBar } from "./shell";
+import { LeftNav, SearchResultPanel, Surface, TopBar } from "./shell";
+import type { SearchResultData, searchResultFor } from "@/lib/search-data";
 import { ActionButton } from "./drawer";
 import {
   ConversationalWorkspace,
