@@ -255,15 +255,17 @@ export function TopBar({
             aria-hidden="true"
           />
           <input
+            ref={inputRef}
             type="search"
             value={query}
             onFocus={() => setSearchOpen(true)}
             onChange={(e) => {
               setQuery(e.target.value);
+              setStaged(null);
               setSearchOpen(true);
             }}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && results[0]) select(results[0]);
+              if (e.key === "Enter") runSearch();
             }}
             placeholder="Search accounts, signals, value…"
             aria-label="Search"
@@ -279,9 +281,27 @@ export function TopBar({
                 className="fixed inset-0 z-40 cursor-default"
               />
               <div className="soft-in absolute right-0 top-[calc(100%+0.5rem)] z-50 max-h-[26rem] w-[24rem] overflow-y-auto rounded-2xl border border-border bg-surface p-2 shadow-lift">
-                {groups.length === 0 && (
-                  <p className="px-3 py-4 text-[13px] text-muted-foreground">
-                    Nothing matches “{query}”. Try an account, a signal or a value question.
+                {(staged || (q && results.length === 0)) && (
+                  <div className="mb-1 rounded-xl border border-otto/30 bg-otto-soft px-3 py-2.5">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-otto">
+                      {staged ? "Search criteria" : "Custom search"}
+                    </p>
+                    <p className="mt-1 text-[13px] font-medium">{query}</p>
+                    <p className="mt-0.5 text-[12px] text-muted-foreground">
+                      {staged ? staged.hint : resolveCustom(query).hint}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={runSearch}
+                      className="mt-2 rounded-lg bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground"
+                    >
+                      Open {staged ? staged.target : resolveCustom(query).target}
+                    </button>
+                  </div>
+                )}
+                {q && results.length === 0 && (
+                  <p className="px-3 py-2 text-[12px] text-muted-foreground">
+                    No exact match — Otto routes this query to the closest surface.
                   </p>
                 )}
                 {groups.map((g) => (
@@ -295,8 +315,11 @@ export function TopBar({
                         <button
                           key={r.label}
                           type="button"
-                          onClick={() => select(r)}
-                          className="block w-full rounded-lg px-3 py-2 text-left transition-colors hover:bg-secondary"
+                          onClick={() => pick(r)}
+                          className={cn(
+                            "block w-full rounded-lg px-3 py-2 text-left transition-colors hover:bg-secondary",
+                            staged?.label === r.label && "bg-secondary",
+                          )}
                         >
                           <span className="block text-[13px] font-medium">{r.label}</span>
                           <span className="mt-0.5 block text-[12px] text-muted-foreground">
@@ -309,6 +332,7 @@ export function TopBar({
               </div>
             </>
           )}
+
         </div>
 
         <span className="text-right text-[12px] leading-tight">
