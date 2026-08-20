@@ -132,6 +132,23 @@ const SEARCH_INDEX: SearchEntry[] = [
   { label: "How does this environment actually work?", group: "Ask Otto", hint: "The operating model and the three awarenesses", target: "Insights" },
 ];
 
+/* A custom query still has to land somewhere real — keyword routing maps free
+ * text to the closest destination in the experience. */
+const CUSTOM_ROUTES: { keys: string[]; target: string; hint: string }[] = [
+  { keys: ["value", "roi", "outcome", "impact"], target: "Value", hint: "Strategic value and realized outcomes" },
+  { keys: ["risk", "churn", "adoption", "signal", "decline", "usage"], target: "Customer Activity", hint: "Signals and adoption trajectory" },
+  { keys: ["plan", "objective", "milestone", "owner"], target: "Success Plans", hint: "Success plan objectives and owners" },
+  { keys: ["meeting", "qbr", "brief", "review", "exec"], target: "Meetings", hint: "Executive briefing and meeting prep" },
+  { keys: ["account", "acme", "globex", "contoso", "customer"], target: "Accounts", hint: "Account workspace" },
+  { keys: ["agent", "otto", "architecture", "model", "awareness", "insight"], target: "Insights", hint: "Operating model and agent intelligence" },
+];
+
+function resolveCustom(query: string) {
+  const q = query.trim().toLowerCase();
+  const match = CUSTOM_ROUTES.find((r) => r.keys.some((k) => q.includes(k)));
+  return match ?? { target: "Home", hint: "Prioritized situations across the portfolio" };
+}
+
 export function TopBar({
   breadcrumb,
   person,
@@ -143,6 +160,10 @@ export function TopBar({
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
+  // The entry the presenter has staged in the box — a suggestion click fills
+  // the input first so the search reads like a real query before it navigates.
+  const [staged, setStaged] = useState<SearchEntry | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const q = query.trim().toLowerCase();
   const results = q
@@ -158,11 +179,32 @@ export function TopBar({
   const closeSearch = () => {
     setSearchOpen(false);
     setQuery("");
+    setStaged(null);
   };
 
-  const select = (entry: SearchEntry) => {
+  const go = (target: string) => {
     closeSearch();
-    onBreadcrumb?.(entry.target);
+    onBreadcrumb?.(target);
+  };
+
+  // First click stages the criteria in the box; a second click (or Enter, or
+  // the Open button) runs it.
+  const pick = (entry: SearchEntry) => {
+    if (staged?.label === entry.label) {
+      go(entry.target);
+      return;
+    }
+    setQuery(entry.label);
+    setStaged(entry);
+    setSearchOpen(true);
+    inputRef.current?.focus();
+  };
+
+  const runSearch = () => {
+    if (!q) return;
+    if (staged) return go(staged.target);
+    if (results[0]) return go(results[0].target);
+    go(resolveCustom(query).target);
   };
 
   useEffect(() => {
@@ -173,6 +215,7 @@ export function TopBar({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [searchOpen]);
+
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-6 py-3 lg:px-10">
