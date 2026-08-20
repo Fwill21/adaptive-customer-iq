@@ -3,8 +3,6 @@ import { cn } from "@/lib/utils";
 import {
   NAV,
   ACTIVITY_RAIL,
-  ADOPTION_SERIES,
-  VALUE_SERIES,
   OTTO_SUGGESTIONS,
   OTTO_ANSWERS,
   OTTO_FALLBACK,
@@ -12,6 +10,7 @@ import {
 } from "@/lib/story-data";
 import type { Detail } from "@/lib/story-data";
 import { OttoMark } from "./primitives";
+import { useAccount, useAccountData } from "@/lib/account-context";
 import { DetailDrawer, useDrawer } from "./drawer";
 import {
   SEARCH_INDEX,
@@ -561,21 +560,23 @@ export function Disclosure({
 /* ─────────────── Intelligence activity rail ─────────────── */
 
 export function IntelligenceRail({
-  items = ACTIVITY_RAIL,
+  items,
   title = "Customer Intelligence Activity",
 }: {
   items?: typeof ACTIVITY_RAIL;
   title?: string;
 }) {
   const drawer = useDrawer();
+  const account = useAccount();
+  const rail = useAccountData(items ?? ACTIVITY_RAIL);
   return (
     <Surface className="lg:sticky lg:top-6">
       <SectionTitle meta="Continuous">{title}</SectionTitle>
       <ol className="mt-5 space-y-5">
-        {items.map((a, i) => (
+        {rail.map((a, i) => (
           <li key={a.title} className="relative pl-6">
             <span className="absolute left-0 top-1.5 size-2 rounded-full bg-otto" />
-            {i < items.length - 1 && (
+            {i < rail.length - 1 && (
               <span className="absolute left-[3.5px] top-4 h-[calc(100%+0.7rem)] w-px bg-border" />
             )}
             <button
@@ -591,7 +592,7 @@ export function IntelligenceRail({
                     {
                       label: "Where it went",
                       items: [
-                        "Written into the shared Acme Corporation context",
+                        `Written into the shared ${account.name} context`,
                         "Visible to CSM, TSM and AE without hand-off",
                         "Carried forward into the quarterly value story",
                       ],
@@ -652,7 +653,8 @@ function path(values: (number | null)[], min: number, max: number) {
 }
 
 export function AdoptionChart() {
-  const { labels, actual, target, projected, divergeIndex } = ADOPTION_SERIES;
+  const account = useAccount();
+  const { labels, actual, target, projected, divergeIndex } = account.adoption;
   const min = 55;
   const max = 95;
   const step = W / (labels.length - 1);
@@ -761,7 +763,8 @@ function Legend({ color, label, dashed }: { color: string; label: string; dashed
 }
 
 export function ValueChart() {
-  const { points, marks } = VALUE_SERIES;
+  const account = useAccount();
+  const { points, marks } = account.value;
   const min = 0;
   const max = 2.8;
   const step = W / (points.length - 1);

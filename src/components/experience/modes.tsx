@@ -21,6 +21,7 @@ import {
   type ModeScript,
 } from "@/lib/mode-data";
 import { OttoMark } from "./primitives";
+import { personalizeData, useAccount, useAccountData } from "@/lib/account-context";
 import { Disclosure, SectionTitle, StatusPill, Surface } from "./shell";
 import { ActionButton, useInfoDrawer } from "./drawer";
 
@@ -135,6 +136,7 @@ export function ConversationalWorkspace({
   momentLabel: string;
   role: string;
 }) {
+  const account = useAccount();
   const [value, setValue] = useState("");
   const [turns, setTurns] = useState<
     { q: string; a: string[]; view: ReturnType<typeof promptResponse>["generated"] }[]
@@ -148,7 +150,7 @@ export function ConversationalWorkspace({
   const submit = (q: string) => {
     const question = q.trim();
     if (!question) return;
-    const { lines, generated } = promptResponse(script, question);
+    const { lines, generated } = personalizeData(promptResponse(script, question), account);
     setTurns((t) => [...t, { q: question, a: lines, view: generated }]);
     setValue("");
 
@@ -258,6 +260,7 @@ export function HybridStrip({
   script: ModeScript;
   contextLine: string;
 }) {
+  const account = useAccount();
   const [value, setValue] = useState("");
   const [asked, setAsked] = useState<string | null>(null);
 
@@ -267,7 +270,7 @@ export function HybridStrip({
     setValue("");
   };
 
-  const response = asked ? promptResponse(script, asked) : null;
+  const response = asked ? personalizeData(promptResponse(script, asked), account) : null;
 
 
   return (
@@ -388,6 +391,7 @@ export function ModesOverview({
   onSetMode?: (m: ModeId) => void;
 }) {
   const info = useInfoDrawer();
+  const account = useAccount();
   return (
     <div className="space-y-6">
       <header className="rise">
@@ -431,7 +435,7 @@ export function ModesOverview({
                       {
                         label: "What stays the same",
                         items: [
-                          "Acme Corporation context, role and workflow state",
+                          `${account.name} context, role and workflow state`,
                           "The same agents doing the same work underneath",
                           "Human confirmation before anything reaches the customer",
                         ],
@@ -589,6 +593,7 @@ function UiDrivenDemo({ script, contextLine }: { script: ModeScript; contextLine
 }
 
 export function ModeSequenceDemo({ onSetMode }: { onSetMode?: (m: ModeId) => void }) {
+  const account = useAccount();
   const [active, setActive] = useState<ModeId | null>(null);
   const script = MODE_SCRIPTS["quarter-1"]!;
   const contextLine = MODE_CONTEXT_LINE["quarter-1"]!;
@@ -650,7 +655,7 @@ export function ModeSequenceDemo({ onSetMode }: { onSetMode?: (m: ModeId) => voi
                 {isActive && (
                   <div className="mt-4 rounded-2xl border border-border bg-background p-4 md:p-5">
                     <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.12em] text-otto">
-                      Live · {s.label} experience · same Acme context
+                      Live · {s.label} experience · same {account.short} context
                     </p>
                     {s.mode === "conversational" && (
                       <ConversationalWorkspace
@@ -680,7 +685,7 @@ export function ModeSequenceDemo({ onSetMode }: { onSetMode?: (m: ModeId) => voi
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {[
             "Alex is the CSM",
-            "Acme is the active account",
+            `${account.short} is the active account`,
             "Q3, week 6",
             "Strategic adoption decline",
             "Coordination workflow in progress",
@@ -699,12 +704,13 @@ export function ModeSequenceDemo({ onSetMode }: { onSetMode?: (m: ModeId) => voi
 
 
 export function SameIntelligenceView() {
+  const sameIntelligence = useAccountData(SAME_INTELLIGENCE);
   return (
     <div className="space-y-6">
       <header className="rise">
         <span className="eyebrow">03 · Same Intelligence</span>
         <h1 className="mt-3 max-w-3xl text-balance text-[1.9rem] font-semibold leading-tight tracking-tight md:text-[2.4rem]">
-          “{SAME_INTELLIGENCE.question}”
+          “{sameIntelligence.question}”
         </h1>
         <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
           Three different interactions. One underlying understanding of the customer.
@@ -712,7 +718,7 @@ export function SameIntelligenceView() {
       </header>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        {SAME_INTELLIGENCE.paths.map((p) => (
+        {sameIntelligence.paths.map((p) => (
           <Surface key={p.mode}>
             <span className="eyebrow">{p.mode}</span>
             <p className="mt-3 text-[15px] leading-relaxed">{p.action}</p>
@@ -723,7 +729,7 @@ export function SameIntelligenceView() {
       <Surface>
         <SectionTitle meta="Shared by all three">Same underlying intelligence</SectionTitle>
         <div className="mt-5 flex flex-wrap gap-2">
-          {SAME_INTELLIGENCE.shared.map((s) => (
+          {sameIntelligence.shared.map((s) => (
             <span
               key={s}
               className="rounded-full border border-agent/25 bg-agent-soft px-3 py-1.5 text-[12px] text-foreground"
@@ -733,7 +739,7 @@ export function SameIntelligenceView() {
           ))}
         </div>
         <p className="mt-6 border-t border-border pt-5 text-[1.15rem] font-semibold tracking-tight">
-          {SAME_INTELLIGENCE.takeaway}
+          {sameIntelligence.takeaway}
         </p>
       </Surface>
 

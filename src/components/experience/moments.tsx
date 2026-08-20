@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
-  ACME_METRICS,
   ACME_TABS,
   ACME_TAB_DATA,
-  ADOPTION_EVIDENCE,
   AGENT_CHAIN,
   ASK_OTTO_THREAD,
   AWARENESSES,
@@ -17,11 +15,9 @@ import {
   OPPORTUNITY_DETAILS,
   POST_MEETING,
   POST_MEETING_CONFIRMED,
-  QUARTER_SCORECARD,
   RECOMMENDATION_DETAIL,
   SITUATIONS,
   SITUATION_DETAILS,
-  VALUE_METRICS,
   WORKSTREAMS,
 } from "@/lib/story-data";
 import { OttoMark, OttoVoice, PrimaryAction } from "./primitives";
@@ -43,6 +39,7 @@ import {
   ValueChart,
 } from "./shell";
 import { ArrowRight, Check } from "lucide-react";
+import { useAccount, useAccountData, useAccountKeyedData } from "@/lib/account-context";
 
 
 export type Role = "CSM" | "TSM";
@@ -51,6 +48,14 @@ export type Role = "CSM" | "TSM";
 
 export function MomentStartQuarter() {
   const drawer = useDrawer();
+  const account = useAccount();
+  // The account in focus leads the queue; its supporting data follows it into
+  // every later stage of the path.
+  const situations = [...SITUATIONS].sort(
+    (a, b) =>
+      Number(b.account.startsWith(account.short)) - Number(a.account.startsWith(account.short)),
+  );
+  const scorecard = account.scorecard;
 
   return (
     <div className="space-y-8">
@@ -65,13 +70,11 @@ export function MomentStartQuarter() {
         <Surface className="space-y-7">
           <SectionTitle meta="Otto · this week">Where your attention matters</SectionTitle>
           <p className="max-w-2xl text-[15px] leading-relaxed">
-            Three accounts need your attention this week. Acme is the highest priority because
-            strategic adoption has declined ahead of an important customer milestone. Globex has a
-            new executive sponsor, while Contoso reached its adoption goal ahead of schedule.
+            {account.headline}
           </p>
 
           <ul className="-mx-2 divide-y divide-border border-t border-border">
-            {SITUATIONS.map((s) => (
+            {situations.map((s) => (
               <li
                 key={s.account}
                 className="flex flex-wrap items-start justify-between gap-4 px-2 py-5"
@@ -101,9 +104,9 @@ export function MomentStartQuarter() {
         <div className="space-y-6">
           <Surface className="space-y-6">
             <SectionTitle meta="Q3 2026">Quarter progress</SectionTitle>
-            <ScoreCard items={QUARTER_SCORECARD} />
+            <ScoreCard items={scorecard} />
             <div className="border-t border-border pt-5">
-              <Meter value={72} label="Customer outcomes on plan" />
+              <Meter value={account.onPlan} label="Customer outcomes on plan" />
             </div>
           </Surface>
 
@@ -145,15 +148,17 @@ export function MomentStartQuarter() {
 
 /* ═════════════════ Acme account frame ═════════════════ */
 
-function AcmeHeader({ tab = "Overview" }: { tab?: string }) {
+function AccountHeader({ tab = "Overview" }: { tab?: string }) {
   const [active, setActive] = useState(tab);
-  const extra = active === tab ? null : ACME_TAB_DATA[active];
+  const account = useAccount();
+  const tabData = useAccountData(ACME_TAB_DATA);
+  const extra = active === tab ? null : tabData[active];
   return (
     <div className="space-y-6">
       <PageHeading
-        title="Acme Corporation"
-        meta="Strategic Account · Q3 2026"
-        intent="Achieve enterprise adoption goals and demonstrate measurable business value before the Q4 executive review."
+        title={account.name}
+        meta={account.segment}
+        intent={account.intent}
       />
       <Tabs items={ACME_TABS} value={active} onChange={setActive} />
       {extra && (
@@ -187,12 +192,15 @@ function AcmeHeader({ tab = "Overview" }: { tab?: string }) {
 export function MomentSomethingChanged({ role }: { role: Role }) {
   const drawer = useDrawer();
   const [ask, setAsk] = useState(false);
+  const account = useAccount();
+  const thread = useAccountData(ASK_OTTO_THREAD);
+  const recommendation = useAccountData(RECOMMENDATION_DETAIL);
   if (role === "TSM") return <TsmInvestigation />;
 
 
   return (
     <div className="space-y-6">
-      <AcmeHeader />
+      <AccountHeader />
       <div className="grid gap-6 lg:grid-cols-[1.62fr_1fr]">
         <div className="space-y-6">
           <Surface className="space-y-7">
@@ -203,15 +211,13 @@ export function MomentSomethingChanged({ role }: { role: Role }) {
 
             <div>
               <p className="text-[1.9rem] font-semibold leading-none tracking-tight">
-                Strategic adoption <span className="text-destructive">↓18%</span>
+                {account.metrics[1]!.label}{" "}
+                <span className="text-destructive">{account.metrics[1]!.value}</span>
               </p>
               <p className="mt-2 text-[13px] text-muted-foreground">
-                Primary deployment group · Past 3 weeks
+                {account.name} · Past 3 weeks
               </p>
-              <p className="mt-4 max-w-2xl text-[15px] leading-relaxed">
-                Adoption has fallen below the expected Q3 trajectory following a recent
-                configuration change.
-              </p>
+              <p className="mt-4 max-w-2xl text-[15px] leading-relaxed">{account.signal}.</p>
             </div>
 
             <div className="grid gap-6 border-t border-border pt-6 md:grid-cols-2">
@@ -233,7 +239,7 @@ export function MomentSomethingChanged({ role }: { role: Role }) {
               <ActionButton
                 variant="solid"
                 className="px-4 py-2.5"
-                onClick={() => drawer.open("recommendation", RECOMMENDATION_DETAIL)}
+                onClick={() => drawer.open("recommendation", recommendation)}
                 done={drawer.isConfirmed("recommendation")}
                 doneLabel="Recommendation approved"
               >
@@ -248,7 +254,7 @@ export function MomentSomethingChanged({ role }: { role: Role }) {
               <div className="soft-in space-y-3 rounded-xl border border-otto/25 bg-otto-soft px-5 py-4">
                 <span className="eyebrow text-otto">Ask Otto</span>
                 <ul className="space-y-3">
-                  {ASK_OTTO_THREAD.map((t) => (
+                  {thread.map((t) => (
                     <li key={t.q}>
                       <p className="text-[14px] font-medium">{t.q}</p>
                       <p className="mt-1 text-[14px] leading-relaxed text-muted-foreground">{t.a}</p>
@@ -261,7 +267,7 @@ export function MomentSomethingChanged({ role }: { role: Role }) {
 
             <Disclosure label="Why does Otto think this?" tone="agent">
               <ul className="space-y-2.5">
-                {ADOPTION_EVIDENCE.map((e) => (
+                {account.evidence.map((e) => (
                   <li key={e} className="flex gap-3 text-[14px] leading-snug">
                     <span className="mt-2 size-1.5 shrink-0 rounded-full bg-agent" />
                     {e}
@@ -274,7 +280,7 @@ export function MomentSomethingChanged({ role }: { role: Role }) {
           <Surface>
             <SectionTitle meta="Q3 2026">Key metrics</SectionTitle>
             <div className="mt-6 grid grid-cols-2 gap-6 md:grid-cols-4">
-              {ACME_METRICS.map((m) => (
+              {account.metrics.map((m) => (
                 <Kpi key={m.label} value={m.value} label={m.label} note={m.delta} tone={m.tone} />
               ))}
             </div>
@@ -308,19 +314,21 @@ export function MomentSomethingChanged({ role }: { role: Role }) {
 
 function TsmInvestigation() {
   const [started, setStarted] = useState(false);
+  const account = useAccount();
+  const steps = useAccountData(INVESTIGATION_STEPS);
   return (
 
     <div className="space-y-6">
       <PageHeading
-        title="Acme Technical Investigation"
-        meta="Maya Chen · Technical Success Manager · Q3 2026"
+        title={`${account.short} Technical Investigation`}
+        meta={`${account.tsm.split(" · ")[0]} · Technical Success Manager · Q3 2026`}
       />
       <div className="grid gap-6 lg:grid-cols-[1.62fr_1fr]">
         <div className="space-y-6">
           <Surface className="space-y-7">
             <div className="space-y-6">
               {[
-                ["What changed", "Strategic adoption declined 18%."],
+                ["What changed", `${account.signal}.`],
                 [
                   "What may explain it",
                   "Configuration activity began shortly before the decline.",
@@ -362,7 +370,7 @@ function TsmInvestigation() {
               <div className="rise space-y-3 border-t border-border pt-6">
                 <span className="eyebrow text-otto">Investigation progress</span>
                 <ul className="space-y-2.5">
-                  {INVESTIGATION_STEPS.map((s, i) => (
+                  {steps.map((s, i) => (
                     <li
                       key={s}
                       className="rise flex items-center gap-3 text-[14px]"
@@ -392,6 +400,8 @@ function TsmInvestigation() {
 
 export function MomentCoordinate({ role }: { role: Role }) {
   const [state, setState] = useState<"idle" | "working" | "done">("idle");
+  const workstreams = useAccountData(WORKSTREAMS);
+  const confirmedLines = useAccountData(COORDINATION_CONFIRMED);
   if (role === "TSM") return <TsmInvestigation />;
 
   const start = () => {
@@ -401,7 +411,7 @@ export function MomentCoordinate({ role }: { role: Role }) {
 
   return (
     <div className="space-y-6">
-      <AcmeHeader tab="Success Plan" />
+      <AccountHeader tab="Success Plan" />
       <div className="grid gap-6 lg:grid-cols-[1.62fr_1fr]">
         <div className="space-y-6">
           <Surface className="space-y-7">
@@ -417,7 +427,7 @@ export function MomentCoordinate({ role }: { role: Role }) {
             </div>
 
             <ul className="divide-y divide-border border-y border-border">
-              {WORKSTREAMS.map((w) => (
+              {workstreams.map((w) => (
                 <li key={w.title} className="flex flex-wrap items-start justify-between gap-4 py-5">
                   <div className="min-w-0 max-w-xl space-y-1.5">
                     <p className="text-[15px] font-semibold">{w.title}</p>
@@ -444,7 +454,7 @@ export function MomentCoordinate({ role }: { role: Role }) {
             )}
             {state === "done" && (
               <ul className="rise space-y-2.5">
-                {COORDINATION_CONFIRMED.map((c, i) => (
+                {confirmedLines.map((c, i) => (
                   <li
                     key={c}
                     className="rise flex items-center gap-3 text-[14px]"
@@ -484,6 +494,10 @@ const CONVERSATION = [
 export function MomentPrepare({ role }: { role: Role }) {
   const [captured, setCaptured] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const account = useAccount();
+  const briefing = useAccountData(BRIEFING);
+  const postMeeting = useAccountData(POST_MEETING);
+  const postConfirmed = useAccountData(POST_MEETING_CONFIRMED);
   if (role === "TSM") return <TsmInvestigation />;
 
   return (
@@ -492,18 +506,20 @@ export function MomentPrepare({ role }: { role: Role }) {
         <div className="space-y-6">
           <div className="flex justify-end">
             <p className="rounded-2xl rounded-br-sm bg-primary px-4 py-2.5 text-[14px] text-primary-foreground">
-              Prepare me for Tuesday's Acme meeting.
+              Prepare me for Tuesday's {account.short} meeting.
             </p>
           </div>
 
           <Surface className="space-y-8">
             <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-5">
-              <h2 className="text-[1.45rem] font-semibold tracking-tight">Acme Customer Briefing</h2>
+              <h2 className="text-[1.45rem] font-semibold tracking-tight">
+                {account.short} Customer Briefing
+              </h2>
               <span className="text-[13px] text-muted-foreground">Tuesday · 10:00 AM</span>
             </div>
 
             <div className="grid gap-7 md:grid-cols-2">
-              {BRIEFING.map(([k, v]) => (
+              {briefing.map(([k, v]) => (
                 <div key={k}>
                   <span className="eyebrow">{k}</span>
                   <p className="mt-2 text-[15px] leading-relaxed">{v}</p>
@@ -552,7 +568,7 @@ export function MomentPrepare({ role }: { role: Role }) {
               <div className="rise space-y-6">
                 <p className="text-[14px] text-muted-foreground">Otto identified:</p>
                 <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-                  {POST_MEETING.map((p) => (
+                  {postMeeting.map((p) => (
                     <div key={p.label}>
                       <p className="text-[1.5rem] font-semibold leading-none tracking-tight">
                         {p.value}
@@ -570,7 +586,7 @@ export function MomentPrepare({ role }: { role: Role }) {
                 </PrimaryAction>
                 {confirmed && (
                   <ul className="rise space-y-2.5 border-t border-border pt-5">
-                    {POST_MEETING_CONFIRMED.map((c, i) => (
+                    {postConfirmed.map((c, i) => (
                       <li
                         key={c}
                         className="rise flex items-center gap-3 text-[14px]"
@@ -599,10 +615,13 @@ export function MomentPrepare({ role }: { role: Role }) {
 
 export function MomentValue() {
   const drawer = useDrawer();
+  const account = useAccount();
+  const opportunities = useAccountData(OPPORTUNITIES);
+  const opportunityDetails = useAccountKeyedData(OPPORTUNITY_DETAILS);
   return (
     <div className="space-y-6">
       <PageHeading
-        title="Acme Customer Value"
+        title={`${account.short} Customer Value`}
         meta="Q3 2026"
         intent="Business outcomes, adoption progress, value realization, and next opportunities."
       />
@@ -612,13 +631,15 @@ export function MomentValue() {
           <Surface className="space-y-8">
             <div>
               <span className="eyebrow">Q3 value realized</span>
-              <p className="mt-3 text-[3rem] font-semibold leading-none tracking-tight">$2.4M</p>
+              <p className="mt-3 text-[3rem] font-semibold leading-none tracking-tight">
+                {account.acv}
+              </p>
               <p className="mt-2 text-[13px] text-muted-foreground">
                 Estimated realized business value
               </p>
             </div>
             <div className="grid grid-cols-2 gap-6 border-t border-border pt-6 md:grid-cols-4">
-              {VALUE_METRICS.map((m) => (
+              {account.valueMetrics.map((m) => (
                 <Kpi key={m.label} value={m.value} label={m.label} note={m.note} tone="up" />
               ))}
             </div>
@@ -640,7 +661,7 @@ export function MomentValue() {
           <Surface className="lg:sticky lg:top-6">
             <SectionTitle meta="Otto">Next-quarter opportunities</SectionTitle>
             <ul className="mt-5 divide-y divide-border border-t border-border">
-              {OPPORTUNITIES.map((o) => (
+              {opportunities.map((o) => (
                 <li key={o.title} className="space-y-2 py-5">
                   <p className="text-[15px] font-semibold leading-snug">{o.title}</p>
                   <p className="text-[12px] text-muted-foreground">
@@ -651,7 +672,7 @@ export function MomentValue() {
                   </p>
                   <p className="text-[13px] leading-snug text-muted-foreground">{o.reason}</p>
                   <ActionButton
-                    onClick={() => drawer.open(`opp:${o.title}`, OPPORTUNITY_DETAILS[o.title]!)}
+                    onClick={() => drawer.open(`opp:${o.title}`, opportunityDetails[o.title]!)}
                     done={drawer.isConfirmed(`opp:${o.title}`)}
                     doneLabel="Added to plan"
                   >
@@ -682,6 +703,7 @@ export function MomentValue() {
 
 export function MomentArchitecture() {
   const info = useInfoDrawer();
+  const account = useAccount();
   return (
     <div className="space-y-10">
       <div className="text-center">
@@ -754,7 +776,7 @@ export function MomentArchitecture() {
                     {
                       label: "How it shows up in this story",
                       items: [
-                        "Acme's adoption decline was detected without anyone asking",
+                        `${account.short}: ${account.signal.toLowerCase()} — detected without anyone asking`,
                         "The response was coordinated across CSM, TSM and AE roles",
                         "The value story assembled itself from what actually happened",
                       ],
@@ -850,11 +872,12 @@ export function MomentBeforeAfter() {
 
 export function AgentChainPanel() {
   const info = useInfoDrawer();
+  const chain = useAccountData(AGENT_CHAIN);
   return (
     <Surface className="lg:sticky lg:top-6">
       <SectionTitle meta="Leadership view">AI activity</SectionTitle>
       <ol className="mt-5 space-y-4">
-        {AGENT_CHAIN.map((a, i) => (
+        {chain.map((a, i) => (
           <li key={a.agent} className="relative pl-6">
             <span
               className={cn(
@@ -862,7 +885,7 @@ export function AgentChainPanel() {
                 a.agent === "Otto" ? "bg-otto" : "bg-agent",
               )}
             />
-            {i < AGENT_CHAIN.length - 1 && (
+            {i < chain.length - 1 && (
               <span className="absolute left-[3.5px] top-4 h-[calc(100%+0.5rem)] w-px bg-border" />
             )}
             <button

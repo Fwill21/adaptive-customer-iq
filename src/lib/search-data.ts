@@ -2,6 +2,8 @@
  * custom query resolves to a destination AND to a distinct result payload that
  * the page renders, so selecting different criteria visibly changes content. */
 
+import type { AccountId } from "./account-context";
+
 export type SearchDest = { path: "quarter" | "qbr" | "modes"; step: number };
 
 export type SearchResultData = {
@@ -15,6 +17,8 @@ export type SearchResultData = {
 
 export type SearchEntry = {
   label: string;
+  /** When a search names an account, every stage that follows adopts it. */
+  account?: AccountId;
   group: string;
   hint: string;
   target: string;
@@ -28,6 +32,7 @@ export const SEARCH_INDEX: SearchEntry[] = [
     group: "Accounts",
     hint: "Strategic Enterprise · Q3 in motion",
     target: "Acme Corporation",
+    account: "acme",
     dest: { path: "quarter", step: 1 },
     result: {
       target: "Acme Corporation",
@@ -46,19 +51,20 @@ export const SEARCH_INDEX: SearchEntry[] = [
   {
     label: "Globex Industries",
     group: "Accounts",
-    hint: "Enterprise · healthy adoption",
-    target: "Portfolio",
-    dest: { path: "quarter", step: 0 },
+    hint: "Enterprise · new executive sponsor",
+    target: "Globex Industries",
+    account: "globex",
+    dest: { path: "quarter", step: 1 },
     result: {
       target: "Portfolio",
       title: "Globex Industries — healthy, no action needed",
       summary:
-        "Adoption is above benchmark across all three deployed workflows. Otto keeps this account out of your queue this week.",
+        "Adoption is above benchmark, but a newly appointed executive sponsor leaves two success plan goals unowned. Every stage that follows now reads for Globex.",
       facts: [
         { label: "Health", value: "Healthy · 88" },
         { label: "ACV", value: "$1.1M" },
-        { label: "Open situations", value: "0" },
-        { label: "Next touch", value: "Quarterly check-in · 6 weeks" },
+        { label: "Open situations", value: "1 · sponsor coverage" },
+        { label: "Next touch", value: "Introduction window · this week" },
       ],
       sources: ["Adoption agent", "Sentiment agent"],
     },
@@ -67,8 +73,9 @@ export const SEARCH_INDEX: SearchEntry[] = [
     label: "Contoso Group",
     group: "Accounts",
     hint: "Enterprise · renewal in 90 days",
-    target: "Portfolio",
-    dest: { path: "quarter", step: 0 },
+    target: "Contoso Group",
+    account: "contoso",
+    dest: { path: "quarter", step: 1 },
     result: {
       target: "Portfolio",
       title: "Contoso Group — renewal window open",
@@ -289,6 +296,7 @@ export const SEARCH_INDEX: SearchEntry[] = [
  * page — keyword routing maps free text to a destination and a result. */
 type CustomRoute = {
   keys: string[];
+  account?: AccountId;
   target: string;
   hint: string;
   dest: SearchDest;
@@ -364,7 +372,8 @@ const CUSTOM_ROUTES: CustomRoute[] = [
     sources: ["Briefing agent", "Value agent"],
   },
   {
-    keys: ["account", "acme", "globex", "contoso", "customer", "portfolio"],
+    keys: ["account", "acme", "customer", "portfolio"],
+    account: "acme",
     target: "Acme Corporation",
     hint: "Account workspace",
     dest: { path: "quarter", step: 1 },
@@ -414,6 +423,17 @@ const FALLBACK: CustomRoute = {
   sources: ["Otto orchestrator"],
 };
 
+const ACCOUNT_KEYWORDS: { keys: string[]; account: AccountId }[] = [
+  { keys: ["globex"], account: "globex" },
+  { keys: ["contoso"], account: "contoso" },
+  { keys: ["acme"], account: "acme" },
+];
+
+export function accountFromQuery(query: string): AccountId | undefined {
+  const q = query.trim().toLowerCase();
+  return ACCOUNT_KEYWORDS.find((a) => a.keys.some((k) => q.includes(k)))?.account;
+}
+
 export function resolveCustom(query: string) {
   const q = query.trim().toLowerCase();
   return CUSTOM_ROUTES.find((r) => r.keys.some((k) => q.includes(k))) ?? FALLBACK;
@@ -422,11 +442,16 @@ export function resolveCustom(query: string) {
 /* Everything a search — suggestion or free text — produces. */
 export function searchResultFor(query: string, entry: SearchEntry | null) {
   if (entry) {
-    return { dest: entry.dest, result: { query, ...entry.result } };
+    return {
+      dest: entry.dest,
+      account: entry.account ?? accountFromQuery(query),
+      result: { query, ...entry.result },
+    };
   }
   const r = resolveCustom(query);
   return {
     dest: r.dest,
+    account: accountFromQuery(query) ?? r.account,
     result: {
       query,
       target: r.target,
