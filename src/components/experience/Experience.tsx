@@ -218,8 +218,7 @@ export function Experience() {
               : (isQbr ? QBR_BREADCRUMBS : BREADCRUMBS)[moment.id] ?? ["Home"],
           )}
           onBreadcrumb={navigate}
-
-
+          onSearch={applySearch}
           person={
             role === "CSM"
               ? { name: "Alex Rivera", role: "CSM · Strategic Enterprise" }
@@ -230,13 +229,19 @@ export function Experience() {
 
         <main className="flex-1 px-6 pb-32 pt-8 lg:px-10 lg:pt-10">
           <div
-            key={`${path}-${moment.id}-${role}-${mode}`}
+            key={`${path}-${moment.id}-${role}-${mode}-${searchResult?.query ?? ""}`}
             className={cn(
               "soft-in mx-auto w-full max-w-[80rem]",
               showActivity && activityAvailable && "grid gap-6 lg:grid-cols-[1fr_19rem]",
             )}
           >
             <div className="min-w-0 space-y-6">
+              {searchResult && (
+                <SearchResultPanel
+                  result={searchResult}
+                  onDismiss={() => setSearchResult(null)}
+                />
+              )}
               {script && mode === "ui" && (
                 <UiDrivenNote script={script} contextLine={contextLine} />
               )}
