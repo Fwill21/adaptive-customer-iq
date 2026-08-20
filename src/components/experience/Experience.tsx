@@ -38,6 +38,7 @@ import type { SearchDest, SearchResultData } from "@/lib/search-data";
 import {
   ACCOUNT_PROFILES,
   AccountProvider,
+  personalizeData,
   personalizeText,
   type AccountId,
 } from "@/lib/account-context";
@@ -183,7 +184,8 @@ export function Experience() {
       ? moment.id >= 1 && moment.id <= 5
       : moment.id >= 2 && moment.id <= 5;
   const roleAvailable = isModes ? false : isQbr ? moment.id === 4 || moment.id === 5 : true;
-  const script = isModes ? undefined : scriptFor(path, moment.id);
+  const rawScript = isModes ? undefined : scriptFor(path, moment.id);
+  const script = rawScript ? personalizeData(rawScript, profile) : undefined;
   const contextLine = personalizeText(
     MODE_CONTEXT_LINE[`${path}-${moment.id}`] ?? "Acme Corporation · Q3",
     profile,
