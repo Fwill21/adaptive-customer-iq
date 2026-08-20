@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Experience } from "@/components/experience/Experience";
 
-const title = "CSP on AINPX — Future Vision Leadership Experience";
+const title = "CSP on LUX — Future Vision Leadership Experience";
 const description =
   "An interactive leadership story for a future ServiceNow Customer Success Platform: Otto orchestrates ten specialized agents across a continuously aware AI environment.";
 

@@ -707,7 +707,7 @@ export function MomentArchitecture() {
   return (
     <div className="space-y-10">
       <div className="text-center">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-otto">CSP on AINPX</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-otto">CSP on LUX</p>
         <h1 className="mt-4 text-balance text-[1.75rem] font-semibold leading-tight tracking-tight md:text-[2.1rem]">
           A new operating model for customer success
         </h1>

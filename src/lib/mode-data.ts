@@ -1,5 +1,5 @@
 /* ═════════ Three Ways to Work — interaction modes ═════════
- * These describe HOW a person interacts with CSP on AINPX.
+ * These describe HOW a person interacts with CSP on LUX.
  * They are not products, personas or profiles — the same Otto,
  * the same agents and the same customer intelligence sit underneath.
  */
@@ -571,7 +571,7 @@ export const HUMAN_CONTROL_STATES = ["Review", "Approve", "Confirm", "Adjust", "
 export const CLOSING_MESSAGE = {
   headline: "AI-native does not mean conversation-only.",
   support:
-    "CSP on AINPX adapts to how people want to work while maintaining the same intelligence, context and orchestration underneath.",
+    "CSP on LUX adapts to how people want to work while maintaining the same intelligence, context and orchestration underneath.",
   lines: [
     "Ask when conversation is fastest.",
     "Navigate when direct interaction is clearest.",

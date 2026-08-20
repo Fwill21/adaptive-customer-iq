@@ -9,7 +9,7 @@ export function PathSelector({ onSelect }: { onSelect: (path: PathId) => void })
         <header className="soft-in mx-auto max-w-3xl space-y-5 text-center">
           <p className="flex items-center justify-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-otto">
             <OttoMark size={16} />
-            CSP on AINPX
+            CSP on LUX
           </p>
           <h1 className="text-balance text-[2rem] font-semibold leading-tight tracking-tight md:text-[2.6rem]">
             Explore the Future of Customer Success
