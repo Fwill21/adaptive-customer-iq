@@ -114,7 +114,7 @@ export function Experience() {
     crumbs[0] === "Home" ? crumbs : ["Home", ...crumbs];
 
   const openPath = (p: PathId) => {
-
+    setSearchResult(null);
     setPath(p);
     setStep(0);
     setRole("CSM");
@@ -126,6 +126,7 @@ export function Experience() {
   // From the path selector, any nav or breadcrumb item enters the primary
   // Quarter in Motion path at the closest matching moment.
   const navigateFromSelector = (item: string) => {
+    setSearchResult(null);
     if (item === "Home" || item === "Customer Success" || item === "Explore the future") {
       setPath("quarter");
       setStep(0);
@@ -167,6 +168,7 @@ export function Experience() {
   const conversationalOnly = !isModes && mode === "conversational" && !!script;
 
   const navigate = (item: string) => {
+    setSearchResult(null);
     // Home and Insights are global anchors: they always resolve, whichever
     // path the presenter is currently in.
     if (item === "Home" || item === "Customer Success") {
