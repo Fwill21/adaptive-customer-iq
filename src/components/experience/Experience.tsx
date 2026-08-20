@@ -35,6 +35,12 @@ import {
 import { PathSelector } from "./PathSelector";
 import { LeftNav, SearchResultPanel, Surface, TopBar } from "./shell";
 import type { SearchDest, SearchResultData } from "@/lib/search-data";
+import {
+  ACCOUNT_PROFILES,
+  AccountProvider,
+  personalizeText,
+  type AccountId,
+} from "@/lib/account-context";
 import { ActionButton } from "./drawer";
 import {
   ConversationalWorkspace,
@@ -52,10 +58,10 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const BREADCRUMBS: Record<number, string[]> = {
   1: ["Home"],
-  2: ["Accounts", "Acme Corporation"],
-  3: ["Accounts", "Acme Corporation", "Success Plan"],
-  4: ["Customer Activity", "Acme Corporation", "Briefing"],
-  5: ["Value", "Acme Corporation"],
+  2: ["Accounts", "@account"],
+  3: ["Accounts", "@account", "Success Plan"],
+  4: ["Customer Activity", "@account", "Briefing"],
+  5: ["Value", "@account"],
   6: ["Insights", "Operating model"],
   7: ["Insights", "Today vs. future"],
 };
@@ -80,8 +86,17 @@ export function Experience() {
   // The last search Otto answered — every suggestion and custom query lands
   // its own destination and its own result payload on the page.
   const [searchResult, setSearchResult] = useState<SearchResultData | null>(null);
+  // The account in focus. Search sets it, and every stage of the path then
+  // renders its metrics, evidence, owners and narrative.
+  const [account, setAccount] = useState<AccountId>("acme");
+  const profile = ACCOUNT_PROFILES[account];
 
-  const applySearch = (payload: { dest: SearchDest; result: SearchResultData }) => {
+  const applySearch = (payload: {
+    dest: SearchDest;
+    account?: AccountId;
+    result: SearchResultData;
+  }) => {
+    if (payload.account) setAccount(payload.account);
     setPath(payload.dest.path as PathId);
     setStep(payload.dest.step);
     setShowActivity(false);
@@ -110,8 +125,12 @@ export function Experience() {
   }, [go]);
 
   // Every page's breadcrumb starts at Home so the header always offers a way back.
-  const withHome = (crumbs: string[]) =>
-    crumbs[0] === "Home" ? crumbs : ["Home", ...crumbs];
+  const withHome = (crumbs: string[]) => {
+    const named = crumbs.map((c) =>
+      c === "@account" ? profile.name : personalizeText(c, profile),
+    );
+    return named[0] === "Home" ? named : ["Home", ...named];
+  };
 
   const openPath = (p: PathId) => {
     setSearchResult(null);
@@ -140,6 +159,7 @@ export function Experience() {
 
   if (!path)
     return (
+      <AccountProvider account={account}>
       <div className="flex min-h-screen bg-background">
         <LeftNav active="Home" onNavigate={navigateFromSelector} />
         <div className="flex min-w-0 flex-1 flex-col">
@@ -152,6 +172,7 @@ export function Experience() {
           <PathSelector onSelect={openPath} />
         </div>
       </div>
+      </AccountProvider>
     );
 
   const pathMeta = PATHS.find((p) => p.id === path)!;
@@ -163,8 +184,10 @@ export function Experience() {
       : moment.id >= 2 && moment.id <= 5;
   const roleAvailable = isModes ? false : isQbr ? moment.id === 4 || moment.id === 5 : true;
   const script = isModes ? undefined : scriptFor(path, moment.id);
-  const contextLine =
-    MODE_CONTEXT_LINE[`${path}-${moment.id}`] ?? "Acme Corporation · Q3";
+  const contextLine = personalizeText(
+    MODE_CONTEXT_LINE[`${path}-${moment.id}`] ?? "Acme Corporation · Q3",
+    profile,
+  );
   const conversationalOnly = !isModes && mode === "conversational" && !!script;
 
   const navigate = (item: string) => {
@@ -204,6 +227,7 @@ export function Experience() {
 
 
   return (
+    <AccountProvider account={account}>
     <div className="flex min-h-screen bg-background">
       <LeftNav
         active={
@@ -223,15 +247,15 @@ export function Experience() {
           onSearch={applySearch}
           person={
             role === "CSM"
-              ? { name: "Alex Rivera", role: "CSM · Strategic Enterprise" }
-              : { name: "Maya Chen", role: "TSM · Technical Success" }
+              ? { name: profile.csm.split(" · ")[0]!, role: "CSM · Strategic Enterprise" }
+              : { name: profile.tsm.split(" · ")[0]!, role: "TSM · Technical Success" }
           }
         />
 
 
         <main className="flex-1 px-6 pb-32 pt-8 lg:px-10 lg:pt-10">
           <div
-            key={`${path}-${moment.id}-${role}-${mode}-${searchResult?.query ?? ""}`}
+            key={`${path}-${moment.id}-${role}-${mode}-${account}-${searchResult?.query ?? ""}`}
             className={cn(
               "soft-in mx-auto w-full max-w-[80rem]",
               showActivity && activityAvailable && "grid gap-6 lg:grid-cols-[1fr_19rem]",
@@ -435,5 +459,6 @@ export function Experience() {
         </footer>
       </div>
     </div>
+    </AccountProvider>
   );
 }
