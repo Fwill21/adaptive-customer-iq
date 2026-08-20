@@ -145,6 +145,7 @@ export function Experience() {
           <TopBar
             breadcrumb={["Home", "Explore the future"]}
             onBreadcrumb={navigateFromSelector}
+            onSearch={applySearch}
             person={{ name: "Alex Rivera", role: "CSM · Strategic Enterprise" }}
           />
           <PathSelector onSelect={openPath} />
