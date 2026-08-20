@@ -93,7 +93,7 @@ export function Experience() {
 
   const applySearch = (payload: {
     dest: SearchDest;
-    account?: AccountId;
+    account: AccountId | undefined;
     result: SearchResultData;
   }) => {
     if (payload.account) setAccount(payload.account);
