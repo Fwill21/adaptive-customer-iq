@@ -40,6 +40,7 @@ import {
 } from "./shell";
 import { ArrowRight, Check } from "lucide-react";
 import { useAccount, useAccountData, useAccountKeyedData } from "@/lib/account-context";
+import { ottoFocus, type FocusItem } from "@/lib/otto-focus";
 
 
 export type Role = "CSM" | "TSM";
