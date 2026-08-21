@@ -138,7 +138,7 @@ export function MomentStartQuarter() {
                               : [],
                           },
                         ],
-                        action: s.action,
+                        confirm: s.action,
                       },
                     )
                   }
