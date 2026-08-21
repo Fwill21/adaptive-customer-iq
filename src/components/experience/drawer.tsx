@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import type { Detail } from "@/lib/story-data";
 import { OttoMark } from "./primitives";
-import { Check, X } from "lucide-react";
+import { Check, Sparkles, X } from "lucide-react";
 
 /* ─────────────── Action buttons (all CTAs are real buttons) ─────────────── */
 
