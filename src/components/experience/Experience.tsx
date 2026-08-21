@@ -275,6 +275,7 @@ export function Experience() {
       />
 
       <PathOtto
+        key={`${path}-${moment.id}-${role}`}
         contextLine={`${profile.name} · ${moment.label} · ${role}`}
         intro={[
           `You are in ${pathMeta.label}, at "${moment.label}".`,
