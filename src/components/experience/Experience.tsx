@@ -55,7 +55,7 @@ import {
   scriptFor,
 } from "./modes";
 import { MODES_MOMENTS, MODE_CONTEXT_LINE, type ModeId } from "@/lib/mode-data";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsDown, SlidersHorizontal } from "lucide-react";
 
 const BREADCRUMBS: Record<number, string[]> = {
   1: ["Home"],
@@ -81,6 +81,8 @@ export function Experience() {
   const [path, setPath] = useState<PathId | null>(null);
   const [step, setStep] = useState(0);
   const [showActivity, setShowActivity] = useState(false);
+  // Presenter panel visibility — collapsible so the story can fill the screen.
+  const [showPanel, setShowPanel] = useState(true);
   const [role, setRole] = useState<Role>("CSM");
   // Work mode is how the person interacts. Hybrid best shows the future state.
   const [mode, setMode] = useState<ModeId>("hybrid");
