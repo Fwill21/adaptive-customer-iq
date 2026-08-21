@@ -55,7 +55,7 @@ import {
   scriptFor,
 } from "./modes";
 import { MODES_MOMENTS, MODE_CONTEXT_LINE, type ModeId } from "@/lib/mode-data";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsDown, SlidersHorizontal } from "lucide-react";
 
 const BREADCRUMBS: Record<number, string[]> = {
   1: ["Home"],
@@ -81,6 +81,8 @@ export function Experience() {
   const [path, setPath] = useState<PathId | null>(null);
   const [step, setStep] = useState(0);
   const [showActivity, setShowActivity] = useState(false);
+  // Presenter panel visibility — collapsible so the story can fill the screen.
+  const [showPanel, setShowPanel] = useState(true);
   const [role, setRole] = useState<Role>("CSM");
   // Work mode is how the person interacts. Hybrid best shows the future state.
   const [mode, setMode] = useState<ModeId>("hybrid");
@@ -353,9 +355,31 @@ export function Experience() {
         </main>
 
         {/* Presentation controls — not production navigation */}
-        <footer className="fixed bottom-4 left-1/2 z-20 w-[min(80rem,calc(100vw-2rem))] -translate-x-1/2 rounded-2xl border border-border bg-surface/95 px-4 py-3 shadow-lift backdrop-blur">
+        {!showPanel && (
+          <button
+            type="button"
+            onClick={() => setShowPanel(true)}
+            className="fixed bottom-4 right-4 z-20 inline-flex items-center gap-2 rounded-xl border border-border bg-surface/95 px-3 py-2 text-[12px] text-muted-foreground shadow-lift backdrop-blur transition-colors hover:text-foreground"
+          >
+            <SlidersHorizontal className="size-3.5" aria-hidden="true" /> Show demo path
+          </button>
+        )}
+        <footer
+          className={cn(
+            "fixed bottom-4 left-1/2 z-20 w-[min(80rem,calc(100vw-2rem))] -translate-x-1/2 rounded-2xl border border-border bg-surface/95 px-4 py-3 shadow-lift backdrop-blur",
+            !showPanel && "hidden",
+          )}
+        >
           <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
             <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+              <button
+                type="button"
+                onClick={() => setShowPanel(false)}
+                aria-label="Hide demo path panel"
+                className="rounded-lg border border-border p-1 text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <ChevronsDown className="size-3.5" aria-hidden="true" />
+              </button>
               <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                 Demo path
               </span>
