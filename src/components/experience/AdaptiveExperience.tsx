@@ -239,10 +239,12 @@ export function AdaptiveExperience({
                   {canvas}
                 </div>
               </main>
-
+            </div>
+          )}
+        </div>
 
         {/* presenter strip — moments, not production navigation */}
-        <footer className="sticky bottom-0 flex flex-wrap items-center gap-2 border-t border-border bg-background/95 px-5 py-2 backdrop-blur">
+        <footer className="flex flex-wrap items-center gap-2 border-t border-border bg-background/95 px-5 py-2 backdrop-blur">
           <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
             Adaptive canvas
           </span>
