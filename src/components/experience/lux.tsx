@@ -361,7 +361,10 @@ export function OttoPanel({
           e.preventDefault();
           submit(value);
         }}
-        className="m-3 mt-1 flex items-center gap-1.5 rounded-2xl border border-border bg-surface px-2 py-1.5 shadow-calm focus-within:border-otto/50"
+        className={cn(
+          "m-3 mt-1 flex items-center gap-1.5 rounded-2xl border border-border bg-surface px-2 py-1.5 shadow-calm focus-within:border-otto/50",
+          variant === "wide" && "mx-auto w-full max-w-[46rem]",
+        )}
       >
         <button
           type="button"
