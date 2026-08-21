@@ -1,6 +1,7 @@
 /**
- * The split-screen future experience: LUX rail + persistent Otto guidance +
- * an adaptive canvas that changes with the moment.
+ * One continuous workspace: LUX rail + Otto + adaptive canvas, where the user
+ * controls the balance between conversation and direct UI with a single
+ * workspace-level slider. The underlying state model never changes with it.
  */
 
 import { useState } from "react";
@@ -12,11 +13,18 @@ import {
   ottoReply,
   type AdaptiveMomentId,
 } from "@/lib/adaptive-data";
-import { GlobalRail, OttoPanel, type OttoTurn } from "./lux";
+import { GlobalRail, OttoPanel, OttoMinimalRail, OttoSpark, type OttoTurn } from "./lux";
 import { AdaptiveCanvas } from "./adaptive-canvas";
 import { ActionButton } from "./drawer";
 import type { ModeId } from "@/lib/mode-data";
 import { ChevronRight } from "lucide-react";
+import {
+  WorkspaceBalance,
+  balanceLabel,
+  canvasDensity,
+  ottoShare,
+  ottoVariant,
+} from "./workspace-balance";
 
 const ORDER: AdaptiveMomentId[] = ADAPTIVE_MOMENTS.map((m) => m.id);
 
