@@ -7,17 +7,27 @@ import { Check, X } from "lucide-react";
 
 /* ─────────────── Action buttons (all CTAs are real buttons) ─────────────── */
 
+/**
+ * Horizon/LUX CTA hierarchy.
+ * primary — the most important action right now
+ * secondary — useful alternative
+ * tertiary — exploration, evidence, lower-priority decisions
+ * ai — Otto is explicitly acting
+ * (solid/outline kept as aliases of primary/secondary)
+ */
+export type ActionVariant = "primary" | "secondary" | "tertiary" | "ai" | "solid" | "outline";
+
 export function ActionButton({
   children,
   onClick,
-  variant = "outline",
+  variant = "secondary",
   done,
   doneLabel,
   className,
 }: {
   children: ReactNode;
   onClick: () => void;
-  variant?: "outline" | "solid";
+  variant?: ActionVariant;
   done?: boolean;
   doneLabel?: string;
   className?: string;
@@ -26,7 +36,7 @@ export function ActionButton({
     return (
       <span
         className={cn(
-          "inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-otto/30 bg-otto-soft px-3 py-1.5 text-[12px] font-medium text-otto",
+          "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-otto/30 bg-otto-soft px-3 text-[12.5px] font-medium text-otto",
           className,
         )}
       >
@@ -35,18 +45,21 @@ export function ActionButton({
       </span>
     );
   }
+  const v = variant === "solid" ? "primary" : variant === "outline" ? "secondary" : variant;
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        "shrink-0 rounded-lg px-3.5 py-1.5 text-[13px] font-medium transition-colors",
-        variant === "solid"
-          ? "bg-primary text-primary-foreground hover:opacity-90"
-          : "border border-border hover:border-border-strong hover:bg-background",
+        "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[12.5px] font-medium transition-colors",
+        v === "primary" && "bg-primary text-primary-foreground hover:opacity-90",
+        v === "secondary" && "border border-border bg-surface hover:border-border-strong",
+        v === "tertiary" && "px-2 text-muted-foreground hover:bg-secondary hover:text-foreground",
+        v === "ai" && "border border-otto/35 bg-otto-soft text-otto hover:border-otto/60",
         className,
       )}
     >
+      {v === "ai" && <Sparkles className="size-3.5" strokeWidth={1.8} aria-hidden="true" />}
       {children}
     </button>
   );
