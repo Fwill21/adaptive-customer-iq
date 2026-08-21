@@ -227,12 +227,22 @@ export function OttoPanel({
   contextLine,
   onAsk,
   onCompose,
+  /** How much room Otto has. Content recomposes rather than shrinking. */
+  variant = "standard",
+  /** Inline workspace content that materializes inside the conversation. */
+  inline,
+  style,
+  fluid = false,
 }: {
   turns: OttoTurn[];
   prompts: string[];
   contextLine: string;
   onAsk: (question: string) => void;
   onCompose?: () => void;
+  variant?: "wide" | "standard" | "condensed";
+  inline?: React.ReactNode;
+  style?: React.CSSProperties;
+  fluid?: boolean;
 }) {
   const [value, setValue] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -249,11 +259,22 @@ export function OttoPanel({
     setValue("");
   };
 
+  // Condensed Otto keeps only the live guidance; wide Otto keeps everything.
+  const shown = variant === "condensed" ? turns.slice(-2) : turns;
+  const shownPrompts = variant === "condensed" ? prompts.slice(0, 1) : prompts;
+  // Reading width stays comfortable even when Otto owns the whole workspace.
+  const column = variant === "wide" ? "mx-auto w-full max-w-[46rem]" : "";
+
   return (
     <aside
       aria-label="Otto guidance"
-      className="sticky top-0 hidden h-screen w-[21rem] shrink-0 flex-col border-r border-border bg-background xl:flex"
+      style={style}
+      className={cn(
+        "sticky top-0 flex min-w-0 flex-col overflow-hidden border-r border-border bg-background",
+        fluid ? "h-full" : "h-screen hidden w-[21rem] shrink-0 xl:flex",
+      )}
     >
+
       {/* compact header, integrated into the chrome */}
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
         <OttoSpark size={16} />
@@ -301,24 +322,27 @@ export function OttoPanel({
       </p>
 
       {/* conversation */}
-      <div ref={scrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
-        {turns.map((t, i) =>
-          t.kind === "user" ? (
-            <div key={i} className="flex justify-end">
-              <p className="max-w-[85%] rounded-2xl rounded-br-md bg-primary px-3 py-2 text-[13px] leading-snug text-primary-foreground">
-                {t.text}
-              </p>
-            </div>
-          ) : (
-            <OttoMessage key={i} turn={t} />
-          ),
-        )}
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+        <div className={cn("space-y-4", column)}>
+          {shown.map((t, i) =>
+            t.kind === "user" ? (
+              <div key={i} className="flex justify-end">
+                <p className="max-w-[85%] rounded-2xl rounded-br-md bg-primary px-3 py-2 text-[13px] leading-snug text-primary-foreground">
+                  {t.text}
+                </p>
+              </div>
+            ) : (
+              <OttoMessage key={i} turn={t} wide={variant === "wide"} />
+            ),
+          )}
+          {inline && <div className="pt-1">{inline}</div>}
+        </div>
       </div>
 
       {/* prompts */}
-      {prompts.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 px-4 pb-2">
-          {prompts.map((p) => (
+      {shownPrompts.length > 0 && (
+        <div className={cn("flex flex-wrap gap-1.5 px-4 pb-2", column)}>
+          {shownPrompts.map((p) => (
             <button
               key={p}
               type="button"
@@ -337,7 +361,10 @@ export function OttoPanel({
           e.preventDefault();
           submit(value);
         }}
-        className="m-3 mt-1 flex items-center gap-1.5 rounded-2xl border border-border bg-surface px-2 py-1.5 shadow-calm focus-within:border-otto/50"
+        className={cn(
+          "m-3 mt-1 flex items-center gap-1.5 rounded-2xl border border-border bg-surface px-2 py-1.5 shadow-calm focus-within:border-otto/50",
+          variant === "wide" && "mx-auto w-full max-w-[46rem]",
+        )}
       >
         <button
           type="button"
@@ -375,15 +402,20 @@ export function OttoPanel({
 
 function OttoMessage({
   turn,
+  wide = false,
 }: {
   turn: { kind: "otto"; lines: string[]; steps?: string[]; sources?: string[] };
+  wide?: boolean;
 }) {
   const [stepsOpen, setStepsOpen] = useState(false);
   const [sourcesOpen, setSourcesOpen] = useState(false);
   return (
-    <div className="space-y-2">
+    <div className={cn("space-y-2", wide && "space-y-3")}>
       {turn.lines.map((l, i) => (
-        <p key={i} className="text-[13px] leading-relaxed text-foreground">
+        <p
+          key={i}
+          className={cn("leading-relaxed text-foreground", wide ? "text-[14.5px]" : "text-[13px]")}
+        >
           {l}
         </p>
       ))}
@@ -493,5 +525,52 @@ export function Chip({
       {tone === "ai" && <OttoSpark size={11} />}
       {children}
     </span>
+  );
+}
+
+/* ─────────────── Otto at minimum width: quiet contextual intelligence ─────────────── */
+
+/**
+ * When the workspace is given almost entirely to the adaptive UI, Otto stays
+ * present as a compact LUX intelligence affordance — never a chat bubble.
+ */
+export function OttoMinimalRail({
+  onExpand,
+  headline,
+  hasGuidance = true,
+}: {
+  onExpand: () => void;
+  headline?: string;
+  hasGuidance?: boolean;
+}) {
+  return (
+    <aside
+      aria-label="Otto"
+      className="sticky top-0 flex h-full w-11 shrink-0 flex-col items-center gap-3 border-r border-border bg-background py-3"
+    >
+      <button
+        type="button"
+        onClick={onExpand}
+        title={headline ? `Otto · ${headline}` : "Open Otto"}
+        className="group relative flex w-8 flex-col items-center gap-2 rounded-lg border border-otto/25 bg-otto-soft py-2 text-otto transition-colors hover:border-otto/50"
+      >
+        <OttoSpark size={14} />
+        <span className="[writing-mode:vertical-rl] text-[10px] font-semibold tracking-[0.14em]">
+          OTTO
+        </span>
+        {hasGuidance && (
+          <span
+            aria-hidden="true"
+            className="absolute -right-1 top-1 size-1.5 rounded-full bg-otto"
+          />
+        )}
+        <span className="sr-only">Open Otto guidance</span>
+      </button>
+      {hasGuidance && headline && (
+        <p className="[writing-mode:vertical-rl] max-h-[18rem] truncate text-[10.5px] text-muted-foreground">
+          {headline}
+        </p>
+      )}
+    </aside>
   );
 }

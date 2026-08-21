@@ -1,6 +1,7 @@
 /**
- * The split-screen future experience: LUX rail + persistent Otto guidance +
- * an adaptive canvas that changes with the moment.
+ * One continuous workspace: LUX rail + Otto + adaptive canvas, where the user
+ * controls the balance between conversation and direct UI with a single
+ * workspace-level slider. The underlying state model never changes with it.
  */
 
 import { useState } from "react";
@@ -12,11 +13,18 @@ import {
   ottoReply,
   type AdaptiveMomentId,
 } from "@/lib/adaptive-data";
-import { GlobalRail, OttoPanel, type OttoTurn } from "./lux";
+import { GlobalRail, OttoPanel, OttoMinimalRail, OttoSpark, type OttoTurn } from "./lux";
 import { AdaptiveCanvas } from "./adaptive-canvas";
 import { ActionButton } from "./drawer";
 import type { ModeId } from "@/lib/mode-data";
 import { ChevronRight } from "lucide-react";
+import {
+  WorkspaceBalance,
+  balanceLabel,
+  canvasDensity,
+  ottoShare,
+  ottoVariant,
+} from "./workspace-balance";
 
 const ORDER: AdaptiveMomentId[] = ADAPTIVE_MOMENTS.map((m) => m.id);
 
@@ -43,8 +51,15 @@ export function AdaptiveExperience({
   const [moment, setMoment] = useState<AdaptiveMomentId>("signal");
   const [showSupport, setShowSupport] = useState(false);
   const [turns, setTurns] = useState<OttoTurn[]>(firstTurns("signal"));
+  // 0 = full Otto, 50 = hybrid (the primary future state), 100 = full UI.
+  const [balance, setBalance] = useState(50);
+  const [dragging, setDragging] = useState(false);
 
   const meta = ADAPTIVE_MOMENTS.find((m) => m.id === moment)!;
+  const share = ottoShare(balance);
+  const variant = ottoVariant(balance);
+  const density = canvasDensity(balance);
+  const ease = dragging ? undefined : "width 240ms cubic-bezier(0.4, 0, 0.2, 1)";
 
   const goMoment = (id: AdaptiveMomentId, userLine?: string) => {
     setMoment(id);
@@ -116,30 +131,27 @@ export function AdaptiveExperience({
   const prompts =
     mode === "ui" ? OTTO_SCRIPT[moment].prompts.slice(0, 1) : OTTO_SCRIPT[moment].prompts;
 
+  const canvas = <AdaptiveCanvas moment={moment} showSupport={showSupport} onAct={onAct} />;
+
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen bg-background">
       <GlobalRail
         active="CSP"
         person={person}
         onSearch={onSearch}
         onSelect={(k) => {
           if (k === "Home") goMoment("signal", "Back to my morning.");
-          if (k === "Otto") ask("What should I focus on right now?");
+          if (k === "Otto") {
+            if (balance > 70) setBalance(50);
+            ask("What should I focus on right now?");
+          }
         }}
       />
 
-      <OttoPanel
-        turns={turns}
-        prompts={prompts}
-        contextLine={`${CUSTOMER.name} · ${CUSTOMER.quarter} · ${person.role}`}
-        onAsk={ask}
-        onCompose={() => setTurns(firstTurns(moment))}
-      />
-
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* app bar: breadcrumb + moment context */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-border px-5 py-2.5">
-          <ol className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground">
+        {/* workspace chrome: breadcrumb + the workspace balance control */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border py-2.5 pl-5 pr-6">
+          <ol className="flex min-w-0 items-center gap-1.5 text-[12.5px] text-muted-foreground">
             {meta.breadcrumb.map((c, i) => (
               <li key={c} className="flex items-center gap-1.5">
                 {i > 0 && <ChevronRight className="size-3" aria-hidden="true" />}
@@ -153,15 +165,86 @@ export function AdaptiveExperience({
               </li>
             ))}
           </ol>
-          <p className="ml-auto text-[11.5px] text-muted-foreground">{meta.intent}</p>
+
+          <div className="ml-auto flex items-center gap-4">
+            {/* Otto may suggest a different balance — it never changes it itself. */}
+            {density === "hidden" && (
+              <button
+                type="button"
+                onClick={() => setBalance(65)}
+                className="hidden items-center gap-1.5 rounded-full border border-otto/30 bg-otto-soft px-2.5 py-1 text-[11px] text-otto transition-colors hover:border-otto/60 lg:inline-flex"
+              >
+                <OttoSpark size={11} /> Easier with more workspace · Expand
+              </button>
+            )}
+            {variant === "minimal" && (
+              <button
+                type="button"
+                onClick={() => setBalance(50)}
+                className="hidden items-center gap-1.5 rounded-full border border-otto/30 bg-otto-soft px-2.5 py-1 text-[11px] text-otto transition-colors hover:border-otto/60 lg:inline-flex"
+              >
+                <OttoSpark size={11} /> Work through this together · Open Otto
+              </button>
+            )}
+            <p className="hidden text-[11.5px] text-muted-foreground xl:block">{meta.intent}</p>
+            <WorkspaceBalance
+              value={balance}
+              onChange={setBalance}
+              onDragChange={setDragging}
+            />
+          </div>
         </div>
 
-        <main className="flex-1 px-5 py-6 lg:px-8">
-          <AdaptiveCanvas moment={moment} showSupport={showSupport} onAct={onAct} />
-        </main>
+        {/* the single workspace: Otto and the adaptive canvas share it */}
+        <div className="flex min-h-0 flex-1">
+          {variant === "minimal" ? (
+            <OttoMinimalRail
+              onExpand={() => setBalance(50)}
+              headline={
+                moment === "signal"
+                  ? "Northwind outcome at risk"
+                  : `${balanceLabel(balance)} · ${meta.label}`
+              }
+            />
+          ) : (
+            <OttoPanel
+              fluid
+              variant={variant === "wide" ? "wide" : variant === "condensed" ? "condensed" : "standard"}
+              style={{ width: `${share * 100}%`, transition: ease }}
+              turns={turns}
+              prompts={prompts}
+              contextLine={`${CUSTOMER.name} · ${CUSTOMER.quarter} · ${person.role}`}
+              onAsk={ask}
+              onCompose={() => setTurns(firstTurns(moment))}
+              inline={
+                density === "hidden" ? (
+                  <div className="rounded-2xl border border-border bg-surface p-4">{canvas}</div>
+                ) : undefined
+              }
+            />
+          )}
+
+          {density !== "hidden" && (
+            <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
+              <main className="flex-1 px-5 py-6 lg:px-8">
+                <div
+                  className={cn(
+                    "mx-auto w-full",
+                    density === "compact" && "max-w-[34rem]",
+                    density === "medium" && "max-w-[56rem]",
+                    density === "full" && "max-w-[76rem]",
+                  )}
+                  data-density={density}
+                >
+                  {canvas}
+                </div>
+              </main>
+            </div>
+          )}
+        </div>
 
         {/* presenter strip — moments, not production navigation */}
-        <footer className="sticky bottom-0 flex flex-wrap items-center gap-2 border-t border-border bg-background/95 px-5 py-2 backdrop-blur">
+        <footer className="flex flex-wrap items-center gap-2 border-t border-border bg-background/95 px-5 py-2 backdrop-blur">
           <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
             Adaptive canvas
           </span>
