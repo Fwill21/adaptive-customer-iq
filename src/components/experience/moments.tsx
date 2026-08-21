@@ -153,13 +153,30 @@ export function MomentStartQuarter() {
         </Surface>
 
         <div className="space-y-6">
-          <Surface className="space-y-6">
-            <SectionTitle meta="Q3 2026">Quarter progress</SectionTitle>
-            <ScoreCard items={scorecard} />
-            <div className="border-t border-border pt-5">
-              <Meter value={account.onPlan} label="Customer outcomes on plan" />
-            </div>
-          </Surface>
+          {focus ? (
+            <Surface key={`metrics-${focus.id}`} className="soft-in space-y-5">
+              <SectionTitle meta={focus.metricsMeta}>{focus.metricsTitle}</SectionTitle>
+              <ul className="divide-y divide-border border-t border-border">
+                {focus.metrics.map((m) => (
+                  <li key={m.label} className="py-3.5">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <span className="text-[13px] text-muted-foreground">{m.label}</span>
+                      <span className="text-[15px] font-semibold">{m.value}</span>
+                    </div>
+                    <p className="mt-1 text-[13px] text-muted-foreground">{m.note}</p>
+                  </li>
+                ))}
+              </ul>
+            </Surface>
+          ) : (
+            <Surface className="space-y-6">
+              <SectionTitle meta="Q3 2026">Quarter progress</SectionTitle>
+              <ScoreCard items={scorecard} />
+              <div className="border-t border-border pt-5">
+                <Meter value={account.onPlan} label="Customer outcomes on plan" />
+              </div>
+            </Surface>
+          )}
 
           <Surface className="space-y-5">
             <SectionTitle meta="AI prepares · people decide">Your decisions</SectionTitle>
