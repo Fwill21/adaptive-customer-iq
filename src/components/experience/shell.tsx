@@ -870,7 +870,14 @@ export function ValueChart() {
 
 /* ─────────────── Otto native input ─────────────── */
 
-export function OttoAsk({ placeholder }: { placeholder: string }) {
+export function OttoAsk({
+  placeholder,
+  onAsk,
+}: {
+  placeholder: string;
+  /** Fires with every chip or typed question so the page below can respond. */
+  onAsk?: (question: string) => void;
+}) {
   const [value, setValue] = useState("");
   const [asked, setAsked] = useState<string | null>(null);
 
@@ -878,6 +885,7 @@ export function OttoAsk({ placeholder }: { placeholder: string }) {
     if (!q.trim()) return;
     setAsked(q.trim());
     setValue("");
+    onAsk?.(q.trim());
   };
 
   const answer = (asked && OTTO_ANSWERS[asked]) || OTTO_FALLBACK;

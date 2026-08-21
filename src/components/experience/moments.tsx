@@ -40,6 +40,7 @@ import {
 } from "./shell";
 import { ArrowRight, Check } from "lucide-react";
 import { useAccount, useAccountData, useAccountKeyedData } from "@/lib/account-context";
+import { ottoFocus, type FocusItem } from "@/lib/otto-focus";
 
 
 export type Role = "CSM" | "TSM";
@@ -49,6 +50,10 @@ export type Role = "CSM" | "TSM";
 export function MomentStartQuarter() {
   const drawer = useDrawer();
   const account = useAccount();
+  // The chip (or typed question) currently steering the page below.
+  const [asked, setAsked] = useState<string | null>(null);
+  const rawFocus = asked ? ottoFocus(asked) : null;
+  const focus = useAccountData(rawFocus);
   // The account in focus leads the queue; its supporting data follows it into
   // every later stage of the path.
   const situations = [...SITUATIONS].sort(
@@ -57,24 +62,51 @@ export function MomentStartQuarter() {
   );
   const scorecard = account.scorecard;
 
+  const listItems: FocusItem[] = focus
+    ? focus.items
+    : situations.map((s) => ({
+        account: s.account,
+        kind: s.kind,
+        tone: s.tone,
+        detail: s.detail,
+        impact: s.impact,
+        action: s.action,
+      }));
+
   return (
     <div className="space-y-8">
       <div className="mx-auto max-w-3xl space-y-5 pt-2 text-center">
         <h1 className="text-balance text-[1.75rem] font-semibold leading-tight tracking-tight md:text-[2.15rem]">
-          Good morning, Alex. Here's where your attention matters today.
+          {focus
+            ? focus.headline
+            : "Good morning, Alex. Here's where your attention matters today."}
         </h1>
-        <OttoAsk placeholder="Ask Otto anything, or describe what you want to get done…" />
+        <OttoAsk
+          placeholder="Ask Otto anything, or describe what you want to get done…"
+          onAsk={setAsked}
+        />
+        {focus && (
+          <button
+            type="button"
+            onClick={() => setAsked(null)}
+            className="rounded-lg border border-border px-3 py-1.5 text-[12px] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Back to my morning view
+          </button>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.62fr_1fr]">
-        <Surface className="space-y-7">
-          <SectionTitle meta="Otto · this week">Where your attention matters</SectionTitle>
+        <Surface key={focus?.id ?? "default"} className="soft-in space-y-7">
+          <SectionTitle meta={focus ? focus.listMeta : "Otto · this week"}>
+            {focus ? focus.listTitle : "Where your attention matters"}
+          </SectionTitle>
           <p className="max-w-2xl text-[15px] leading-relaxed">
-            {account.headline}
+            {focus ? focus.lead : account.headline}
           </p>
 
           <ul className="-mx-2 divide-y divide-border border-t border-border">
-            {situations.map((s) => (
+            {listItems.map((s) => (
               <li
                 key={s.account}
                 className="flex flex-wrap items-start justify-between gap-4 px-2 py-5"
@@ -90,7 +122,26 @@ export function MomentStartQuarter() {
                   </p>
                 </div>
                 <ActionButton
-                  onClick={() => drawer.open(`situation:${s.account}`, SITUATION_DETAILS[s.account]!)}
+                  onClick={() =>
+                    drawer.open(
+                      `situation:${s.account}`,
+                      SITUATION_DETAILS[s.account] ?? {
+                        title: s.account,
+                        meta: focus ? focus.eyebrow : "Otto",
+                        summary: s.detail,
+                        sections: [
+                          { label: "Why this matters", items: [`Potential impact — ${s.impact}`] },
+                          {
+                            label: "How Otto knows",
+                            items: focus
+                              ? focus.metrics.map((m) => `${m.label}: ${m.value} — ${m.note}`)
+                              : [],
+                          },
+                        ],
+                        confirm: s.action,
+                      },
+                    )
+                  }
                   done={drawer.isConfirmed(`situation:${s.account}`)}
                   doneLabel="Actioned"
                 >
@@ -102,13 +153,30 @@ export function MomentStartQuarter() {
         </Surface>
 
         <div className="space-y-6">
-          <Surface className="space-y-6">
-            <SectionTitle meta="Q3 2026">Quarter progress</SectionTitle>
-            <ScoreCard items={scorecard} />
-            <div className="border-t border-border pt-5">
-              <Meter value={account.onPlan} label="Customer outcomes on plan" />
-            </div>
-          </Surface>
+          {focus ? (
+            <Surface key={`metrics-${focus.id}`} className="soft-in space-y-5">
+              <SectionTitle meta={focus.metricsMeta}>{focus.metricsTitle}</SectionTitle>
+              <ul className="divide-y divide-border border-t border-border">
+                {focus.metrics.map((m) => (
+                  <li key={m.label} className="py-3.5">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <span className="text-[13px] text-muted-foreground">{m.label}</span>
+                      <span className="text-[15px] font-semibold">{m.value}</span>
+                    </div>
+                    <p className="mt-1 text-[13px] text-muted-foreground">{m.note}</p>
+                  </li>
+                ))}
+              </ul>
+            </Surface>
+          ) : (
+            <Surface className="space-y-6">
+              <SectionTitle meta="Q3 2026">Quarter progress</SectionTitle>
+              <ScoreCard items={scorecard} />
+              <div className="border-t border-border pt-5">
+                <Meter value={account.onPlan} label="Customer outcomes on plan" />
+              </div>
+            </Surface>
+          )}
 
           <Surface className="space-y-5">
             <SectionTitle meta="AI prepares · people decide">Your decisions</SectionTitle>
