@@ -227,12 +227,22 @@ export function OttoPanel({
   contextLine,
   onAsk,
   onCompose,
+  /** How much room Otto has. Content recomposes rather than shrinking. */
+  variant = "standard",
+  /** Inline workspace content that materializes inside the conversation. */
+  inline,
+  style,
+  fluid = false,
 }: {
   turns: OttoTurn[];
   prompts: string[];
   contextLine: string;
   onAsk: (question: string) => void;
   onCompose?: () => void;
+  variant?: "wide" | "standard" | "condensed";
+  inline?: React.ReactNode;
+  style?: React.CSSProperties;
+  fluid?: boolean;
 }) {
   const [value, setValue] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -249,11 +259,22 @@ export function OttoPanel({
     setValue("");
   };
 
+  // Condensed Otto keeps only the live guidance; wide Otto keeps everything.
+  const shown = variant === "condensed" ? turns.slice(-2) : turns;
+  const shownPrompts = variant === "condensed" ? prompts.slice(0, 1) : prompts;
+  // Reading width stays comfortable even when Otto owns the whole workspace.
+  const column = variant === "wide" ? "mx-auto w-full max-w-[46rem]" : "";
+
   return (
     <aside
       aria-label="Otto guidance"
-      className="sticky top-0 hidden h-screen w-[21rem] shrink-0 flex-col border-r border-border bg-background xl:flex"
+      style={style}
+      className={cn(
+        "sticky top-0 flex h-screen min-w-0 flex-col overflow-hidden border-r border-border bg-background",
+        fluid ? "" : "hidden w-[21rem] shrink-0 xl:flex",
+      )}
     >
+
       {/* compact header, integrated into the chrome */}
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
         <OttoSpark size={16} />
