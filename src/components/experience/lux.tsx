@@ -527,3 +527,50 @@ export function Chip({
     </span>
   );
 }
+
+/* ─────────────── Otto at minimum width: quiet contextual intelligence ─────────────── */
+
+/**
+ * When the workspace is given almost entirely to the adaptive UI, Otto stays
+ * present as a compact LUX intelligence affordance — never a chat bubble.
+ */
+export function OttoMinimalRail({
+  onExpand,
+  headline,
+  hasGuidance = true,
+}: {
+  onExpand: () => void;
+  headline?: string;
+  hasGuidance?: boolean;
+}) {
+  return (
+    <aside
+      aria-label="Otto"
+      className="sticky top-0 flex h-screen w-11 shrink-0 flex-col items-center gap-3 border-r border-border bg-background py-3"
+    >
+      <button
+        type="button"
+        onClick={onExpand}
+        title={headline ? `Otto · ${headline}` : "Open Otto"}
+        className="group relative flex w-8 flex-col items-center gap-2 rounded-lg border border-otto/25 bg-otto-soft py-2 text-otto transition-colors hover:border-otto/50"
+      >
+        <OttoSpark size={14} />
+        <span className="[writing-mode:vertical-rl] text-[10px] font-semibold tracking-[0.14em]">
+          OTTO
+        </span>
+        {hasGuidance && (
+          <span
+            aria-hidden="true"
+            className="absolute -right-1 top-1 size-1.5 rounded-full bg-otto"
+          />
+        )}
+        <span className="sr-only">Open Otto guidance</span>
+      </button>
+      {hasGuidance && headline && (
+        <p className="[writing-mode:vertical-rl] max-h-[18rem] truncate text-[10.5px] text-muted-foreground">
+          {headline}
+        </p>
+      )}
+    </aside>
+  );
+}
