@@ -150,7 +150,7 @@ export function AdaptiveExperience({
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* workspace chrome: breadcrumb + the workspace balance control */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border px-5 py-2">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border py-2.5 pl-5 pr-6">
           <ol className="flex min-w-0 items-center gap-1.5 text-[12.5px] text-muted-foreground">
             {meta.breadcrumb.map((c, i) => (
               <li key={c} className="flex items-center gap-1.5">
