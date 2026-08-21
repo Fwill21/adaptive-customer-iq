@@ -399,8 +399,10 @@ export function OttoPanel({
 
 function OttoMessage({
   turn,
+  wide = false,
 }: {
   turn: { kind: "otto"; lines: string[]; steps?: string[]; sources?: string[] };
+  wide?: boolean;
 }) {
   const [stepsOpen, setStepsOpen] = useState(false);
   const [sourcesOpen, setSourcesOpen] = useState(false);
