@@ -245,7 +245,7 @@ export const OTTO_SCRIPT: Record<
   evidence: {
     say: [
       "Adoption fell from 68% to 51%, and almost all of it sits in the two workflows behind their 15% cost target.",
-      "There is another factor: three P1 cases affected the same workflows during the same weeks.",
+      "I am starting with the workflow view rather than the account view, because that is where their commitment lives.",
     ],
     steps: [
       "Isolated decline by workflow rather than by account",

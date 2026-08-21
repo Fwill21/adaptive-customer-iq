@@ -140,9 +140,10 @@ function SignalCanvas({ onAct }: { onAct: (a: string) => void }) {
 
 function AdoptionSpark() {
   const max = 72;
+  const min = 46;
   const points = ADOPTION_SERIES.map((d, i) => {
     const x = (i / (ADOPTION_SERIES.length - 1)) * 100;
-    const y = 100 - (d.value / max) * 100;
+    const y = 96 - ((d.value - min) / (max - min)) * 92;
     return `${x},${y}`;
   }).join(" ");
   return (
