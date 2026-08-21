@@ -62,7 +62,7 @@ export function MomentStartQuarter() {
   );
   const scorecard = account.scorecard;
 
-  const listItems = focus
+  const listItems: FocusItem[] = focus
     ? focus.items
     : situations.map((s) => ({
         account: s.account,
