@@ -270,8 +270,8 @@ export function OttoPanel({
       aria-label="Otto guidance"
       style={style}
       className={cn(
-        "sticky top-0 flex h-screen min-w-0 flex-col overflow-hidden border-r border-border bg-background",
-        fluid ? "" : "hidden w-[21rem] shrink-0 xl:flex",
+        "sticky top-0 flex min-w-0 flex-col overflow-hidden border-r border-border bg-background",
+        fluid ? "h-full" : "h-screen hidden w-[21rem] shrink-0 xl:flex",
       )}
     >
 
@@ -546,7 +546,7 @@ export function OttoMinimalRail({
   return (
     <aside
       aria-label="Otto"
-      className="sticky top-0 flex h-screen w-11 shrink-0 flex-col items-center gap-3 border-r border-border bg-background py-3"
+      className="sticky top-0 flex h-full w-11 shrink-0 flex-col items-center gap-3 border-r border-border bg-background py-3"
     >
       <button
         type="button"
