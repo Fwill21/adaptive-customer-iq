@@ -407,9 +407,12 @@ function OttoMessage({
   const [stepsOpen, setStepsOpen] = useState(false);
   const [sourcesOpen, setSourcesOpen] = useState(false);
   return (
-    <div className="space-y-2">
+    <div className={cn("space-y-2", wide && "space-y-3")}>
       {turn.lines.map((l, i) => (
-        <p key={i} className="text-[13px] leading-relaxed text-foreground">
+        <p
+          key={i}
+          className={cn("leading-relaxed text-foreground", wide ? "text-[14.5px]" : "text-[13px]")}
+        >
           {l}
         </p>
       ))}
