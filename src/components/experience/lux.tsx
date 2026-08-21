@@ -103,7 +103,7 @@ export function GlobalRail({
 }: {
   active?: string;
   onSelect?: (key: string) => void;
-  onSearch?: () => void;
+  onSearch?: (() => void) | undefined;
   person: { name: string; role: string };
 }) {
   const initials = person.name

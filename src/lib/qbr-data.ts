@@ -2,9 +2,34 @@ import type { AgentKey, Detail, DetailSection, Stage } from "./story-data";
 
 /* ═════════ Path model (leadership demo paths) ═════════ */
 
-export type PathId = "quarter" | "qbr" | "modes";
+export type PathId = "adaptive" | "quarter" | "qbr" | "modes";
 
 export const PATHS = [
+  {
+    id: "adaptive" as PathId,
+    label: "Adaptive Experience",
+    subtitle: "LUX Navigation · Otto Guidance · Adaptive CSP Canvas",
+    description:
+      "The future-state split screen: a persistent LUX rail, persistent Otto guidance, and a canvas that assembles only the interface this role needs for this customer at this moment.",
+    cta: "Open the adaptive experience",
+    steps: [
+      "01 Focused signal",
+      "02 Relevant evidence",
+      "03 Human judgment",
+      "04 Coordination",
+      "05 Review & approve",
+      "06 Customer thread",
+    ],
+    question:
+      "What if the interface assembled itself around the work instead of exposing every dashboard?",
+    proves: [
+      "split-screen architecture",
+      "progressive disclosure",
+      "goal-organised context",
+      "human judgment preserved",
+      "one continuous customer thread",
+    ],
+  },
   {
     id: "quarter" as PathId,
     label: "Quarter in Motion",

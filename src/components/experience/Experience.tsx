@@ -33,7 +33,10 @@ import {
   QbrPrepareMe,
 } from "./qbr-moments";
 import { PathSelector } from "./PathSelector";
-import { LeftNav, SearchResultPanel, Surface, TopBar } from "./shell";
+import { SearchResultPanel, Surface, TopBar } from "./shell";
+import { GlobalRail, OttoPanel, type OttoTurn } from "./lux";
+import { AdaptiveExperience } from "./AdaptiveExperience";
+import { ottoReply } from "@/lib/adaptive-data";
 import type { SearchDest, SearchResultData } from "@/lib/search-data";
 import {
   ACCOUNT_PROFILES,
@@ -78,7 +81,7 @@ const NAV_ACTIVE: Record<number, string> = {
 };
 
 export function Experience() {
-  const [path, setPath] = useState<PathId | null>(null);
+  const [path, setPath] = useState<PathId | null>("adaptive");
   const [step, setStep] = useState(0);
   const [showActivity, setShowActivity] = useState(false);
   // Presenter panel visibility — collapsible so the story can fill the screen.
@@ -160,11 +163,34 @@ export function Experience() {
     setStep(target >= 0 ? target : 0);
   };
 
+  if (path === "adaptive")
+    return (
+      <AccountProvider account={account}>
+        <AdaptiveExperience
+          person={{ name: "Maya Alvarez", role: "CSM · Strategic Enterprise" }}
+          mode={mode}
+          onChangePath={() => setPath(null)}
+        />
+      </AccountProvider>
+    );
+
   if (!path)
     return (
       <AccountProvider account={account}>
       <div className="flex min-h-screen bg-background">
-        <LeftNav active="Home" onNavigate={navigateFromSelector} />
+        <GlobalRail
+          active="Home"
+          person={{ name: "Maya Alvarez", role: "CSM · Strategic Enterprise" }}
+          onSelect={navigateFromSelector}
+        />
+        <PathOtto
+          contextLine="Choose a demo path · Strategic Enterprise portfolio"
+          intro={[
+            "Every path runs inside the same LUX environment: global rail, persistent Otto guidance, adaptive canvas.",
+            "The Adaptive Experience is the clearest expression of the future state.",
+          ]}
+          prompts={["Which path shows the future best?", "What changes for the CSM?"]}
+        />
         <div className="flex min-w-0 flex-1 flex-col">
           <TopBar
             breadcrumb={["Home", "Explore the future"]}
@@ -233,11 +259,28 @@ export function Experience() {
   return (
     <AccountProvider account={account}>
     <div className="flex min-h-screen bg-background">
-      <LeftNav
-        active={
-          isModes ? "Insights" : (isQbr ? QBR_NAV_ACTIVE : NAV_ACTIVE)[moment.id] ?? "Home"
+      <GlobalRail
+        active="CSP"
+        person={
+          role === "CSM"
+            ? { name: profile.csm.split(" · ")[0]!, role: "CSM · Strategic Enterprise" }
+            : { name: profile.tsm.split(" · ")[0]!, role: "TSM · Technical Success" }
         }
-        onNavigate={navigate}
+        onSelect={(k) => {
+          if (k === "Home") navigate("Home");
+          if (k === "Workspace") navigate("Accounts");
+          if (k === "Files") navigate("Success Plans");
+          if (k === "CSP") navigate("Customer Success");
+        }}
+      />
+
+      <PathOtto
+        contextLine={`${profile.name} · ${moment.label} · ${role}`}
+        intro={[
+          `You are in ${pathMeta.label}, at "${moment.label}".`,
+          "I keep the context — customer, commitments, decisions — while the canvas on the right changes around the work.",
+        ]}
+        prompts={["Why does this matter now?", "What should I do next?", "Show the evidence"]}
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -486,5 +529,46 @@ export function Experience() {
       </div>
     </div>
     </AccountProvider>
+  );
+}
+
+
+/** Layer 2 for the scripted paths: persistent Otto guidance beside the rail. */
+function PathOtto({
+  contextLine,
+  intro,
+  prompts,
+}: {
+  contextLine: string;
+  intro: string[];
+  prompts: string[];
+}) {
+  const base: OttoTurn[] = [
+    {
+      kind: "otto",
+      lines: intro,
+      steps: [
+        "Held the customer, role and quarter context across the whole session",
+        "Selected guidance for the current moment only",
+      ],
+      sources: ["Customer thread", "Success plan", "Live signals"],
+    },
+  ];
+  const [turns, setTurns] = useState<OttoTurn[]>(base);
+
+  return (
+    <OttoPanel
+      turns={turns}
+      prompts={prompts}
+      contextLine={contextLine}
+      onCompose={() => setTurns(base)}
+      onAsk={(q) =>
+        setTurns((prev) => [
+          ...prev,
+          { kind: "user", text: q },
+          { kind: "otto", lines: ottoReply(q), sources: ["Live signals", "Customer thread"] },
+        ])
+      }
+    />
   );
 }
