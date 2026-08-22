@@ -144,7 +144,7 @@ export function AdaptiveExperience({
         onSelect={(k) => {
           if (k === "Home") goMoment("signal", "Back to my morning.");
           if (k === "Otto") {
-            if (balance > 70) setBalance(50);
+            if (split < 20) setSplit(DEFAULT_SPLIT);
             ask("What should I focus on right now?");
           }
         }}
