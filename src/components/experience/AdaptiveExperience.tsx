@@ -169,60 +169,56 @@ export function AdaptiveExperience({
           </ol>
 
           <div className="ml-auto flex items-center gap-4">
-            {/* Otto may suggest a different balance — it never changes it itself. */}
-            {density === "hidden" && (
-              <button
-                type="button"
-                onClick={() => setBalance(65)}
-                className="hidden items-center gap-1.5 rounded-full border border-otto/30 bg-otto-soft px-2.5 py-1 text-[11px] text-otto transition-colors hover:border-otto/60 lg:inline-flex"
-              >
-                <OttoSpark size={11} /> Easier with more workspace · Expand
-              </button>
-            )}
-            {variant === "minimal" && (
-              <button
-                type="button"
-                onClick={() => setBalance(50)}
-                className="hidden items-center gap-1.5 rounded-full border border-otto/30 bg-otto-soft px-2.5 py-1 text-[11px] text-otto transition-colors hover:border-otto/60 lg:inline-flex"
-              >
-                <OttoSpark size={11} /> Work through this together · Open Otto
-              </button>
-            )}
             <p className="hidden text-[11.5px] text-muted-foreground xl:block">{meta.intent}</p>
-            <WorkspaceBalance
-              value={balance}
-              onChange={setBalance}
-              onDragChange={setDragging}
-            />
+            {/* subtle, temporary read-out of the split — not a control */}
+            <p
+              aria-live="polite"
+              className={cn(
+                "font-mono text-[10px] uppercase tracking-[0.12em] transition-opacity duration-200",
+                dragging ? "text-otto opacity-100" : "text-muted-foreground opacity-60",
+              )}
+            >
+              {splitLabel(split)}
+            </p>
           </div>
         </div>
 
-        {/* the single workspace: Otto and the adaptive canvas share it */}
-        <div className="flex min-h-0 flex-1">
-          {variant === "minimal" ? (
-            <OttoMinimalRail
-              onExpand={() => setBalance(50)}
-              headline={
-                moment === "signal"
-                  ? "Northwind outcome at risk"
-                  : `${balanceLabel(balance)} · ${meta.label}`
-              }
+        {/* one continuous surface: Otto | divider | adaptive canvas */}
+        <div ref={workspaceRef} className="flex min-h-0 flex-1">
+          {split <= 0 ? (
+            // Full UI — Otto is hidden; the left edge restores it.
+            <WorkspaceDivider
+              value={split}
+              onChange={setSplit}
+              onDragChange={setDragging}
+              containerRef={workspaceRef}
+              edge="left"
             />
           ) : (
             <OttoPanel
               fluid
-              variant={variant === "wide" ? "wide" : variant === "condensed" ? "condensed" : "standard"}
-              style={{ width: `${share * 100}%`, transition: ease }}
+              variant={
+                variant === "wide" ? "wide" : variant === "condensed" ? "condensed" : "standard"
+              }
+              style={{
+                width: split >= 100 ? "100%" : `${split}%`,
+                transition: ease,
+              }}
               turns={turns}
               prompts={prompts}
               contextLine={`${CUSTOMER.name} · ${CUSTOMER.quarter} · ${person.role}`}
               onAsk={ask}
               onCompose={() => setTurns(firstTurns(moment))}
-              inline={
-                density === "hidden" ? (
-                  <div className="rounded-2xl border border-border bg-surface p-4">{canvas}</div>
-                ) : undefined
-              }
+            />
+          )}
+
+          {split > 0 && (
+            <WorkspaceDivider
+              value={split}
+              onChange={setSplit}
+              onDragChange={setDragging}
+              containerRef={workspaceRef}
+              edge={split >= 100 ? "right" : undefined}
             />
           )}
 
@@ -234,7 +230,7 @@ export function AdaptiveExperience({
                     "mx-auto w-full",
                     density === "compact" && "max-w-[34rem]",
                     density === "medium" && "max-w-[56rem]",
-                    density === "full" && "max-w-[76rem]",
+                    density === "full" && "max-w-[80rem]",
                   )}
                   data-density={density}
                 >
