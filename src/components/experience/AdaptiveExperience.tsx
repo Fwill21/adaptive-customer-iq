@@ -218,7 +218,7 @@ export function AdaptiveExperience({
               onChange={setSplit}
               onDragChange={setDragging}
               containerRef={workspaceRef}
-              edge={split >= 100 ? "right" : undefined}
+              {...(split >= 100 ? ({ edge: "right" } as const) : {})}
             />
           )}
 
