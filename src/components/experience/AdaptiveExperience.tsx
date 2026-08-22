@@ -4,7 +4,7 @@
  * workspace-level slider. The underlying state model never changes with it.
  */
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   ADAPTIVE_MOMENTS,
@@ -13,18 +13,18 @@ import {
   ottoReply,
   type AdaptiveMomentId,
 } from "@/lib/adaptive-data";
-import { GlobalRail, OttoPanel, OttoMinimalRail, OttoSpark, type OttoTurn } from "./lux";
+import { GlobalRail, OttoPanel, type OttoTurn } from "./lux";
 import { AdaptiveCanvas } from "./adaptive-canvas";
 import { ActionButton } from "./drawer";
 import type { ModeId } from "@/lib/mode-data";
 import { ChevronRight } from "lucide-react";
 import {
-  WorkspaceBalance,
-  balanceLabel,
+  DEFAULT_SPLIT,
+  WorkspaceDivider,
   canvasDensity,
-  ottoShare,
   ottoVariant,
-} from "./workspace-balance";
+  splitLabel,
+} from "./workspace-split";
 
 const ORDER: AdaptiveMomentId[] = ADAPTIVE_MOMENTS.map((m) => m.id);
 
