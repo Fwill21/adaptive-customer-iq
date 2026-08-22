@@ -51,15 +51,17 @@ export function AdaptiveExperience({
   const [moment, setMoment] = useState<AdaptiveMomentId>("signal");
   const [showSupport, setShowSupport] = useState(false);
   const [turns, setTurns] = useState<OttoTurn[]>(firstTurns("signal"));
-  // 0 = full Otto, 50 = hybrid (the primary future state), 100 = full UI.
-  const [balance, setBalance] = useState(50);
+  // Otto's share of the workspace: 0 = full UI, 100 = full chat.
+  const [split, setSplit] = useState(DEFAULT_SPLIT);
   const [dragging, setDragging] = useState(false);
+  const workspaceRef = useRef<HTMLDivElement>(null);
 
   const meta = ADAPTIVE_MOMENTS.find((m) => m.id === moment)!;
-  const share = ottoShare(balance);
-  const variant = ottoVariant(balance);
-  const density = canvasDensity(balance);
-  const ease = dragging ? undefined : "width 240ms cubic-bezier(0.4, 0, 0.2, 1)";
+  const variant = ottoVariant(split);
+  const density = canvasDensity(split);
+  const ease = dragging
+    ? undefined
+    : "width 220ms cubic-bezier(0.4, 0, 0.2, 1)";
 
   const goMoment = (id: AdaptiveMomentId, userLine?: string) => {
     setMoment(id);
