@@ -4,7 +4,7 @@
  * workspace-level slider. The underlying state model never changes with it.
  */
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   ADAPTIVE_MOMENTS,
@@ -13,18 +13,18 @@ import {
   ottoReply,
   type AdaptiveMomentId,
 } from "@/lib/adaptive-data";
-import { GlobalRail, OttoPanel, OttoMinimalRail, OttoSpark, type OttoTurn } from "./lux";
+import { GlobalRail, OttoPanel, type OttoTurn } from "./lux";
 import { AdaptiveCanvas } from "./adaptive-canvas";
 import { ActionButton } from "./drawer";
 import type { ModeId } from "@/lib/mode-data";
 import { ChevronRight } from "lucide-react";
 import {
-  WorkspaceBalance,
-  balanceLabel,
+  DEFAULT_SPLIT,
+  WorkspaceDivider,
   canvasDensity,
-  ottoShare,
   ottoVariant,
-} from "./workspace-balance";
+  splitLabel,
+} from "./workspace-split";
 
 const ORDER: AdaptiveMomentId[] = ADAPTIVE_MOMENTS.map((m) => m.id);
 
@@ -51,15 +51,17 @@ export function AdaptiveExperience({
   const [moment, setMoment] = useState<AdaptiveMomentId>("signal");
   const [showSupport, setShowSupport] = useState(false);
   const [turns, setTurns] = useState<OttoTurn[]>(firstTurns("signal"));
-  // 0 = full Otto, 50 = hybrid (the primary future state), 100 = full UI.
-  const [balance, setBalance] = useState(50);
+  // Otto's share of the workspace: 0 = full UI, 100 = full chat.
+  const [split, setSplit] = useState(DEFAULT_SPLIT);
   const [dragging, setDragging] = useState(false);
+  const workspaceRef = useRef<HTMLDivElement>(null);
 
   const meta = ADAPTIVE_MOMENTS.find((m) => m.id === moment)!;
-  const share = ottoShare(balance);
-  const variant = ottoVariant(balance);
-  const density = canvasDensity(balance);
-  const ease = dragging ? undefined : "width 240ms cubic-bezier(0.4, 0, 0.2, 1)";
+  const variant = ottoVariant(split);
+  const density = canvasDensity(split);
+  const ease = dragging
+    ? undefined
+    : "width 220ms cubic-bezier(0.4, 0, 0.2, 1)";
 
   const goMoment = (id: AdaptiveMomentId, userLine?: string) => {
     setMoment(id);
@@ -142,7 +144,7 @@ export function AdaptiveExperience({
         onSelect={(k) => {
           if (k === "Home") goMoment("signal", "Back to my morning.");
           if (k === "Otto") {
-            if (balance > 70) setBalance(50);
+            if (split < 20) setSplit(DEFAULT_SPLIT);
             ask("What should I focus on right now?");
           }
         }}
@@ -167,60 +169,56 @@ export function AdaptiveExperience({
           </ol>
 
           <div className="ml-auto flex items-center gap-4">
-            {/* Otto may suggest a different balance — it never changes it itself. */}
-            {density === "hidden" && (
-              <button
-                type="button"
-                onClick={() => setBalance(65)}
-                className="hidden items-center gap-1.5 rounded-full border border-otto/30 bg-otto-soft px-2.5 py-1 text-[11px] text-otto transition-colors hover:border-otto/60 lg:inline-flex"
-              >
-                <OttoSpark size={11} /> Easier with more workspace · Expand
-              </button>
-            )}
-            {variant === "minimal" && (
-              <button
-                type="button"
-                onClick={() => setBalance(50)}
-                className="hidden items-center gap-1.5 rounded-full border border-otto/30 bg-otto-soft px-2.5 py-1 text-[11px] text-otto transition-colors hover:border-otto/60 lg:inline-flex"
-              >
-                <OttoSpark size={11} /> Work through this together · Open Otto
-              </button>
-            )}
             <p className="hidden text-[11.5px] text-muted-foreground xl:block">{meta.intent}</p>
-            <WorkspaceBalance
-              value={balance}
-              onChange={setBalance}
-              onDragChange={setDragging}
-            />
+            {/* subtle, temporary read-out of the split — not a control */}
+            <p
+              aria-live="polite"
+              className={cn(
+                "font-mono text-[10px] uppercase tracking-[0.12em] transition-opacity duration-200",
+                dragging ? "text-otto opacity-100" : "text-muted-foreground opacity-60",
+              )}
+            >
+              {splitLabel(split)}
+            </p>
           </div>
         </div>
 
-        {/* the single workspace: Otto and the adaptive canvas share it */}
-        <div className="flex min-h-0 flex-1">
-          {variant === "minimal" ? (
-            <OttoMinimalRail
-              onExpand={() => setBalance(50)}
-              headline={
-                moment === "signal"
-                  ? "Northwind outcome at risk"
-                  : `${balanceLabel(balance)} · ${meta.label}`
-              }
+        {/* one continuous surface: Otto | divider | adaptive canvas */}
+        <div ref={workspaceRef} className="flex min-h-0 flex-1">
+          {split <= 0 ? (
+            // Full UI — Otto is hidden; the left edge restores it.
+            <WorkspaceDivider
+              value={split}
+              onChange={setSplit}
+              onDragChange={setDragging}
+              containerRef={workspaceRef}
+              edge="left"
             />
           ) : (
             <OttoPanel
               fluid
-              variant={variant === "wide" ? "wide" : variant === "condensed" ? "condensed" : "standard"}
-              style={{ width: `${share * 100}%`, transition: ease }}
+              variant={
+                variant === "wide" ? "wide" : variant === "condensed" ? "condensed" : "standard"
+              }
+              style={{
+                width: split >= 100 ? "100%" : `${split}%`,
+                transition: ease,
+              }}
               turns={turns}
               prompts={prompts}
               contextLine={`${CUSTOMER.name} · ${CUSTOMER.quarter} · ${person.role}`}
               onAsk={ask}
               onCompose={() => setTurns(firstTurns(moment))}
-              inline={
-                density === "hidden" ? (
-                  <div className="rounded-2xl border border-border bg-surface p-4">{canvas}</div>
-                ) : undefined
-              }
+            />
+          )}
+
+          {split > 0 && (
+            <WorkspaceDivider
+              value={split}
+              onChange={setSplit}
+              onDragChange={setDragging}
+              containerRef={workspaceRef}
+              {...(split >= 100 ? ({ edge: "right" } as const) : {})}
             />
           )}
 
@@ -232,7 +230,7 @@ export function AdaptiveExperience({
                     "mx-auto w-full",
                     density === "compact" && "max-w-[34rem]",
                     density === "medium" && "max-w-[56rem]",
-                    density === "full" && "max-w-[76rem]",
+                    density === "full" && "max-w-[80rem]",
                   )}
                   data-density={density}
                 >
