@@ -112,7 +112,7 @@ function EvidenceCard({ id, onClose }: { id: EvidenceId; onClose: () => void }) 
 }
 
 /** Quiet background intelligence — work continues between Maya's interactions. */
-export function ActivityRail({ step, focus }: { step: QimStepId; focus?: string }) {
+export function ActivityRail({ step, focus }: { step: QimStepId; focus?: string | undefined }) {
   const order: QimStepId[] = ["l1", "l2", "l3", "l4", "l5"];
   const upto = Math.max(0, order.indexOf(step));
   const shown = LUX_ACTIVITY.filter((a) => order.indexOf(a.step) <= upto);

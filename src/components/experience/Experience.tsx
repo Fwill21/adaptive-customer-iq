@@ -237,13 +237,13 @@ export function Experience() {
     // Home and Insights are global anchors: they always resolve, whichever
     // path the presenter is currently in.
     if (item === "Home" || item === "Customer Success") {
-      if (path !== "quarter") setPath("quarter");
+      setPath("quarter" as PathId);
       setStep(0);
       return;
     }
     if (item === "Insights") {
-      if (path !== "quarter") {
-        setPath("quarter");
+      if (true) {
+        setPath("quarter" as PathId);
         setStep(MOMENTS.findIndex((m) => m.id === 6));
         return;
       }
@@ -262,7 +262,7 @@ export function Experience() {
     const explicit: Record<string, number> = { "Success Plans": 2, Meetings: 3 };
     const target = explicit[item] ?? MOMENTS.findIndex((m) => NAV_ACTIVE[m.id] === item);
     if (target >= 0) {
-      if (path !== "quarter") setPath("quarter");
+      setPath("quarter" as PathId);
       setStep(target);
     }
   };
