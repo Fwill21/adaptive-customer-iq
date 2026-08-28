@@ -242,15 +242,11 @@ export function Experience() {
       return;
     }
     if (item === "Insights") {
-      if (true) {
-        setPath("quarter" as PathId);
-        setStep(MOMENTS.findIndex((m) => m.id === 6));
-        return;
-      }
-      const insights = MOMENTS.findIndex((m) => NAV_ACTIVE[m.id] === "Insights");
-      if (insights >= 0) setStep(insights);
+      setPath("quarter" as PathId);
+      setStep(MOMENTS.findIndex((m) => m.id === 6));
       return;
     }
+
     if (isQbr) {
       const target = QBR_MOMENTS.findIndex((m) => QBR_NAV_ACTIVE[m.id] === item);
       if (target >= 0) {
