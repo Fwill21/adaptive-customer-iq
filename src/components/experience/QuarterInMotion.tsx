@@ -80,6 +80,7 @@ export function QuarterInMotion({
 
   const go = (id: QimStepId, userLine?: string) => {
     setStep(id);
+    if (id === step && !userLine) return;
     setTurns((prev) => [
       ...prev,
       ...(userLine ? ([{ kind: "user", text: userLine }] as OttoTurn[]) : []),
