@@ -163,6 +163,17 @@ export function Experience() {
     setStep(target >= 0 ? target : 0);
   };
 
+  if (path === "quarter")
+    return (
+      <AccountProvider account={account}>
+        <QuarterInMotion
+          onChangePath={() => setPath(null)}
+          onQbrPath={() => setPath("qbr")}
+          onSearch={applySearch ? () => undefined : undefined}
+        />
+      </AccountProvider>
+    );
+
   if (path === "adaptive")
     return (
       <AccountProvider account={account}>
@@ -173,6 +184,7 @@ export function Experience() {
         />
       </AccountProvider>
     );
+
 
   if (!path)
     return (
