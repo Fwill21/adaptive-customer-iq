@@ -36,6 +36,7 @@ import { PathSelector } from "./PathSelector";
 import { SearchResultPanel, Surface, TopBar } from "./shell";
 import { GlobalRail, OttoPanel, type OttoTurn } from "./lux";
 import { AdaptiveExperience } from "./AdaptiveExperience";
+import { QuarterInMotion } from "./QuarterInMotion";
 import { ottoReply } from "@/lib/adaptive-data";
 import type { SearchDest, SearchResultData } from "@/lib/search-data";
 import {
@@ -169,7 +170,6 @@ export function Experience() {
         <QuarterInMotion
           onChangePath={() => setPath(null)}
           onQbrPath={() => setPath("qbr")}
-          onSearch={applySearch ? () => undefined : undefined}
         />
       </AccountProvider>
     );
