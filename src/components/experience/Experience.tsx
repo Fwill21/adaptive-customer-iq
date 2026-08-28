@@ -36,6 +36,7 @@ import { PathSelector } from "./PathSelector";
 import { SearchResultPanel, Surface, TopBar } from "./shell";
 import { GlobalRail, OttoPanel, type OttoTurn } from "./lux";
 import { AdaptiveExperience } from "./AdaptiveExperience";
+import { QuarterInMotion } from "./QuarterInMotion";
 import { ottoReply } from "@/lib/adaptive-data";
 import type { SearchDest, SearchResultData } from "@/lib/search-data";
 import {
@@ -163,6 +164,16 @@ export function Experience() {
     setStep(target >= 0 ? target : 0);
   };
 
+  if (path === "quarter")
+    return (
+      <AccountProvider account={account}>
+        <QuarterInMotion
+          onChangePath={() => setPath(null)}
+          onQbrPath={() => setPath("qbr")}
+        />
+      </AccountProvider>
+    );
+
   if (path === "adaptive")
     return (
       <AccountProvider account={account}>
@@ -173,6 +184,7 @@ export function Experience() {
         />
       </AccountProvider>
     );
+
 
   if (!path)
     return (
@@ -225,20 +237,16 @@ export function Experience() {
     // Home and Insights are global anchors: they always resolve, whichever
     // path the presenter is currently in.
     if (item === "Home" || item === "Customer Success") {
-      if (path !== "quarter") setPath("quarter");
+      setPath("quarter" as PathId);
       setStep(0);
       return;
     }
     if (item === "Insights") {
-      if (path !== "quarter") {
-        setPath("quarter");
-        setStep(MOMENTS.findIndex((m) => m.id === 6));
-        return;
-      }
-      const insights = MOMENTS.findIndex((m) => NAV_ACTIVE[m.id] === "Insights");
-      if (insights >= 0) setStep(insights);
+      setPath("quarter" as PathId);
+      setStep(MOMENTS.findIndex((m) => m.id === 6));
       return;
     }
+
     if (isQbr) {
       const target = QBR_MOMENTS.findIndex((m) => QBR_NAV_ACTIVE[m.id] === item);
       if (target >= 0) {
@@ -250,7 +258,7 @@ export function Experience() {
     const explicit: Record<string, number> = { "Success Plans": 2, Meetings: 3 };
     const target = explicit[item] ?? MOMENTS.findIndex((m) => NAV_ACTIVE[m.id] === item);
     if (target >= 0) {
-      if (path !== "quarter") setPath("quarter");
+      setPath("quarter" as PathId);
       setStep(target);
     }
   };
