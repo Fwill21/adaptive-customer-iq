@@ -11,9 +11,8 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { EVIDENCE, WHY_TRAILS, type EvidenceId, type TrailId } from "@/lib/northstar-data";
 import { ActionButton } from "../drawer";
-import { OttoSpark } from "../lux";
 import { Surface } from "../shell";
-import { Bell, ChevronDown, Paperclip, X } from "lucide-react";
+import { Bell, ChevronDown, Paperclip, Sparkles, X } from "lucide-react";
 
 /** Evidence detail, rendered inline beneath whatever cited it. */
 export function EvidenceDetail({ id, onClose }: { id: EvidenceId; onClose: () => void }) {
@@ -73,7 +72,7 @@ export function WhyTrail({
         className="flex w-full items-center justify-between gap-3 text-left"
       >
         <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-otto">
-          <OttoSpark size={12} /> {label}
+          <Sparkles className="size-3" aria-hidden="true" /> {label}
         </span>
         <ChevronDown
           className={cn(

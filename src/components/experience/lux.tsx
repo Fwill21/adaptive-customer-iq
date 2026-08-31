@@ -8,6 +8,8 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import type { TrailId } from "@/lib/northstar-data";
+import { WhyTrail } from "./northstar/why";
 import {
   Bell,
   CircleUser,
@@ -412,7 +414,13 @@ function OttoMessage({
   turn,
   wide = false,
 }: {
-  turn: { kind: "otto"; lines: string[]; steps?: string[]; sources?: string[] };
+  turn: {
+    kind: "otto";
+    lines: string[];
+    steps?: string[];
+    sources?: string[];
+    trail?: TrailId;
+  };
   wide?: boolean;
 }) {
   const [stepsOpen, setStepsOpen] = useState(false);
@@ -427,6 +435,8 @@ function OttoMessage({
           {l}
         </p>
       ))}
+
+      {turn.trail && <WhyTrail id={turn.trail} tone="inline" />}
 
       {turn.steps && turn.steps.length > 0 && (
         <div>
