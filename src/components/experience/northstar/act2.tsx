@@ -40,7 +40,6 @@ import {
   ArrowDown,
   ArrowUp,
   Check,
-  ChevronDown,
   Paperclip,
   Presentation,
   ShieldCheck,
@@ -960,6 +959,8 @@ export function MomentQbr({ onNext }: { onNext: () => void }) {
         </div>
       </Surface>
 
+      <WhyTrail id="qbr-story" label="Why the story is ordered this way" />
+
       <Ledger step="l4" />
     </div>
   );
@@ -1097,6 +1098,8 @@ export function MomentForward({ onNext }: { onNext: () => void }) {
           )}
         </Surface>
       )}
+
+      <WhyTrail id="carry-forward" label="Why these records update" />
 
       <Ledger step="l5" />
     </div>
