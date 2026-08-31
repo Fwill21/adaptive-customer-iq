@@ -219,7 +219,15 @@ export function GlobalRail({
 
 export type OttoTurn =
   | { kind: "user"; text: string }
-  | { kind: "otto"; lines: string[]; steps?: string[]; sources?: string[] };
+  | {
+      kind: "otto";
+      lines: string[];
+      steps?: string[];
+      sources?: string[];
+      /** Inspectable reasoning trail behind this conclusion. */
+      trail?: TrailId;
+    };
+
 
 export function OttoPanel({
   turns,
