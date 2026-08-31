@@ -294,6 +294,9 @@ export function QuarterInMotion({
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
+            <ActionButton variant="tertiary" onClick={() => setAlertState("shown")}>
+              Replay Northstar alert
+            </ActionButton>
             <ActionButton variant="tertiary" onClick={next}>
               Next moment
             </ActionButton>
