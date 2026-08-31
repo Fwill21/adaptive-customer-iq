@@ -762,3 +762,156 @@ export function nsReply(q: string): string[] {
     "The outcome is unchanged; the Wave 2 dependency is the constraint on the path to it.",
   ];
 }
+
+/* ───────────── Inspectable reasoning: "why surfaced" trails ─────────────
+ * Every AI conclusion in Act 2 — Otto's guidance and each specialist agent's
+ * output — can be opened to show which agent concluded it, what it read, how
+ * it reasoned, what it ruled out, and the underlying evidence.
+ */
+
+export type TrailId =
+  | "priority-signal"
+  | "causal-chain"
+  | "recommendations"
+  | "qbr-story"
+  | "carry-forward";
+
+export type WhyTrailData = {
+  conclusion: string;
+  agent: string;
+  confidence: string;
+  inputs: { label: string; detail: string }[];
+  reasoning: string[];
+  ruledOut: string[];
+  evidence: EvidenceId[];
+};
+
+export const WHY_TRAILS: Record<TrailId, WhyTrailData> = {
+  "priority-signal": {
+    conclusion: "Northstar Health deserves attention before the QBR.",
+    agent: "Otto · orchestrator, with Adoption and Deployment agents",
+    confidence: "High — three independent sources agree on the same origin week",
+    inputs: [
+      { label: "Usage telemetry", detail: "Priority capability, weeks 1–9, per regional network" },
+      { label: "Delivery record", detail: "Wave 2 cutover history and validation status" },
+      { label: "Customer record", detail: "Q2 QBR commitments and stated outcome" },
+      { label: "Engagement history", detail: "Sponsor and super-user session attendance" },
+    ],
+    reasoning: [
+      "Adoption fell 68% → 49%, and the decline starts the week after the Wave 2 slip.",
+      "The three changes share one time origin, so they are treated as one pattern, not three alerts.",
+      "The pattern touches a committed outcome, which is why it is surfaced now.",
+      "Priority is not driven by the QBR date — the same signal would surface without a meeting.",
+    ],
+    ruledOut: [
+      "Seasonal usage dip — network 1 and 2 volumes are flat, not seasonal.",
+      "Customer disengagement — the outcome was restated in the week 5 session.",
+      "Licence or access fault — no entitlement or error signals in the window.",
+    ],
+    evidence: ["adoption-trend", "delivery-update", "session-note", "commitment"],
+  },
+  "causal-chain": {
+    conclusion: "Adoption is an effect. The Wave 2 dependency is the root cause.",
+    agent: "Deployment agent, reviewed by the Adoption agent",
+    confidence: "High — sequence confirmed in delivery and customer records",
+    inputs: [
+      { label: "Cutover timeline", detail: "Two Wave 2 slips, week 5 and week 8" },
+      { label: "Onboarding queue", detail: "Network 3 super users never enabled" },
+      { label: "Adoption curve", detail: "Weekly active use by network" },
+    ],
+    reasoning: [
+      "Onboarding of the next user group paused when the environment failed validation.",
+      "The adoption curve bends one week after that pause, in the paused networks only.",
+      "Networks already onboarded held steady, which separates cause from effect.",
+    ],
+    ruledOut: [
+      "Capability fit — satisfaction and task completion held for onboarded users.",
+      "Training gap — enabled cohorts show no drop after enablement.",
+    ],
+    evidence: ["timeline", "delivery-update", "adoption-trend"],
+  },
+  recommendations: {
+    conclusion: "Unblock the dependency first; the milestone change stays a proposal.",
+    agent: "Value agent, with Deployment and Adoption inputs",
+    confidence: "Medium — impact modelled, customer position not yet confirmed",
+    inputs: [
+      { label: "Root cause", detail: "Wave 2 environment validation outstanding" },
+      { label: "Commitment ledger", detail: "Network 3 super users by end of Q3" },
+      { label: "Comparable accounts", detail: "Recovery pattern after similar dependency clears" },
+    ],
+    reasoning: [
+      "Adoption work before the dependency clears would move the effect, not the cause.",
+      "Specialist involvement is ranked first because it shortens the blocking path.",
+      "A milestone date change touches a customer commitment, so it cannot be applied by the system.",
+    ],
+    ruledOut: [
+      "Launching an adoption campaign now — the paused networks cannot act on it.",
+      "Silently re-dating the commitment — that is Maya's decision with the customer.",
+    ],
+    evidence: ["delivery-update", "commitment", "adoption-trend"],
+  },
+  "qbr-story": {
+    conclusion: "Open with what was achieved, then explain the dependency honestly.",
+    agent: "Value agent, narrative assembly",
+    confidence: "Medium — framing is Maya's to edit",
+    inputs: [
+      { label: "Quarter of decisions", detail: "Working sessions, delivery updates, commitments" },
+      { label: "Outcome progress", detail: "17% handling-time reduction of a 30% target" },
+      { label: "Customer language", detail: "Phrases the sponsor used in her own sessions" },
+    ],
+    reasoning: [
+      "Achievement first, because progress against the outcome is real and verifiable.",
+      "The slowdown is explained by cause rather than symptom, so the customer hears one story.",
+      "Every section carries its evidence, so nothing in the deck is unsourced.",
+    ],
+    ruledOut: [
+      "Leading with the adoption number — it reads as a customer failure, not a dependency.",
+      "Omitting the slip — the customer already knows and would lose trust.",
+    ],
+    evidence: ["commitment", "session-note", "timeline"],
+  },
+  "carry-forward": {
+    conclusion: "The commitment change propagates only after Maya approves it.",
+    agent: "Otto · orchestrator, continuity",
+    confidence: "High — synchronization targets are deterministic",
+    inputs: [
+      { label: "Captured decision", detail: "Milestone moved after the customer conversation" },
+      { label: "Downstream records", detail: "Success plan, delivery plan, account team, next QBR" },
+    ],
+    reasoning: [
+      "The decision was captured in the customer conversation, with its own evidence.",
+      "Each target is updated from that single record, so no one re-enters it by hand.",
+      "Nothing synchronizes while the decision is still pending approval.",
+    ],
+    ruledOut: [
+      "Auto-applying the new date at capture time — it is a customer commitment.",
+    ],
+    evidence: ["commitment", "session-note"],
+  },
+};
+
+/** Which trail sits behind Otto's guidance at each LUX moment. */
+export const NS_OTTO_TRAIL: Partial<Record<QimStepId, TrailId>> = {
+  l1: "priority-signal",
+  l2: "causal-chain",
+  l3: "recommendations",
+  l4: "qbr-story",
+  l5: "carry-forward",
+};
+
+/** Proactive notification — LUX pulls Maya in before she navigates to Northstar. */
+export const NORTHSTAR_ALERT = {
+  agent: "Otto · priority signal",
+  at: "Just now · while Maya works another account",
+  headline: "Northstar Health needs attention before the QBR",
+  support:
+    "Three related changes may affect Northstar's path to its committed outcome. The outcome itself has not changed.",
+  bullets: [
+    "Adoption 68% → 49% in the paused regional networks",
+    "Wave 2 dependency unresolved, slipped twice",
+    "Sponsor engagement down since week 5",
+  ],
+  trail: "priority-signal" as TrailId,
+  open: "Open Northstar workspace",
+  later: "Not now",
+};

@@ -7,13 +7,15 @@
  * guidance, adaptive canvas separated by the draggable split.
  */
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   ACT_LABEL,
   MAYA,
   NORTHSTAR,
+  NORTHSTAR_ALERT,
   NS_OTTO,
+  NS_OTTO_TRAIL,
   QIM_STEPS,
   nsReply,
   type QimStepId,
@@ -30,6 +32,7 @@ import {
 } from "./workspace-split";
 import { TodayNotice, TodayBuildStory, TodayPrepareLead } from "./northstar/act1";
 import { TransitionScreen, WrapUpScreen } from "./northstar/transition";
+import { NorthstarNotification } from "./northstar/why";
 import {
   ActivityRail,
   MomentAttention,
@@ -45,6 +48,7 @@ const ottoTurn = (id: QimStepId): OttoTurn[] => [
   {
     kind: "otto",
     lines: NS_OTTO[id].lines,
+    ...(NS_OTTO_TRAIL[id] ? { trail: NS_OTTO_TRAIL[id]! } : {}),
     ...(NS_OTTO[id].steps ? { steps: NS_OTTO[id].steps } : {}),
     ...(NS_OTTO[id].sources ? { sources: NS_OTTO[id].sources } : {}),
   },
@@ -71,7 +75,16 @@ export function QuarterInMotion({
   const [turns, setTurns] = useState<OttoTurn[]>(ottoTurn("t1"));
   const [split, setSplit] = useState(DEFAULT_SPLIT);
   const [dragging, setDragging] = useState(false);
+  // Proactive pull-in: LUX brings Northstar to Maya before she navigates to it.
+  const [alertState, setAlertState] = useState<"pending" | "shown" | "closed">("pending");
   const workspaceRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (alertState !== "pending") return;
+    if (step !== "transition") return;
+    const t = setTimeout(() => setAlertState("shown"), 1400);
+    return () => clearTimeout(t);
+  }, [step, alertState]);
 
   const meta = QIM_STEPS.find((s) => s.id === step)!;
   const variant = ottoVariant(split);
@@ -245,6 +258,17 @@ export function QuarterInMotion({
           )}
         </div>
 
+        {alertState === "shown" && (
+          <NorthstarNotification
+            alert={NORTHSTAR_ALERT}
+            onOpen={() => {
+              setAlertState("closed");
+              go("l1", "Open Northstar — what changed?");
+            }}
+            onDismiss={() => setAlertState("closed")}
+          />
+        )}
+
         <footer className="flex flex-wrap items-center gap-2 border-t border-border bg-background/95 px-5 py-2 backdrop-blur">
           <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
             A quarter in the life
@@ -270,6 +294,9 @@ export function QuarterInMotion({
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
+            <ActionButton variant="tertiary" onClick={() => setAlertState("shown")}>
+              Replay Northstar alert
+            </ActionButton>
             <ActionButton variant="tertiary" onClick={next}>
               Next moment
             </ActionButton>

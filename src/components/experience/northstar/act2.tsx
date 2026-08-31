@@ -33,13 +33,13 @@ import {
   type QimStepId,
 } from "@/lib/northstar-data";
 import { ActionButton } from "../drawer";
+import { WhyTrail } from "./why";
 import { CanvasHeader, Chip, OttoSpark } from "../lux";
 import { Surface } from "../shell";
 import {
   ArrowDown,
   ArrowUp,
   Check,
-  ChevronDown,
   Paperclip,
   Presentation,
   ShieldCheck,
@@ -184,7 +184,6 @@ export function MomentAttention({
   onOpenWorkspace: () => void;
 }) {
   const [opened, setOpened] = useState(false);
-  const [why, setWhy] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -239,38 +238,7 @@ export function MomentAttention({
             </div>
           </Surface>
 
-          <Surface className="space-y-3">
-            <button
-              type="button"
-              onClick={() => setWhy((v) => !v)}
-              className="flex w-full items-center justify-between gap-3 text-left"
-            >
-              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-otto">
-                Why surfaced
-              </span>
-              <ChevronDown
-                className={cn("size-4 text-muted-foreground transition-transform", why && "rotate-180")}
-                aria-hidden="true"
-              />
-            </button>
-            {why && (
-              <div className="soft-in space-y-3">
-                <ul className="space-y-2 text-[13.5px] leading-relaxed">
-                  {PRIORITY_SIGNAL.whySurfaced.reasoning.map((r) => (
-                    <li key={r} className="flex gap-2">
-                      <span className="mt-2 size-1.5 shrink-0 rounded-full bg-otto" />
-                      {r}
-                    </li>
-                  ))}
-                </ul>
-                <div className="flex flex-wrap gap-2 border-t border-border pt-3">
-                  {PRIORITY_SIGNAL.whySurfaced.evidence.map((e) => (
-                    <Chip key={e}>{e}</Chip>
-                  ))}
-                </div>
-              </div>
-            )}
-          </Surface>
+          <WhyTrail id="priority-signal" defaultOpen />
 
           <Surface className="flex flex-wrap items-center justify-between gap-3 border-human/35">
             <div>
@@ -397,6 +365,8 @@ export function MomentUnderstand({ onNext }: { onNext: () => void }) {
       </Surface>
 
       {evidence && <EvidenceCard id={evidence} onClose={() => setEvidence(null)} />}
+
+      <WhyTrail id="causal-chain" label="Why LUX concluded this" />
 
       <div className="grid gap-4 md:grid-cols-2">
         <Surface className="space-y-3">
@@ -667,6 +637,8 @@ export function MomentDecide({ onNext }: { onNext: () => void }) {
       </div>
 
       {evidence && <EvidenceCard id={evidence} onClose={() => setEvidence(null)} />}
+
+      <WhyTrail id="recommendations" label="Why these recommendations, in this order" />
 
       <MayaSays>
         “Prepare the new milestone, but don't change it yet. I want to discuss it with the customer.
@@ -987,6 +959,8 @@ export function MomentQbr({ onNext }: { onNext: () => void }) {
         </div>
       </Surface>
 
+      <WhyTrail id="qbr-story" label="Why the story is ordered this way" />
+
       <Ledger step="l4" />
     </div>
   );
@@ -1124,6 +1098,8 @@ export function MomentForward({ onNext }: { onNext: () => void }) {
           )}
         </Surface>
       )}
+
+      <WhyTrail id="carry-forward" label="Why these records update" />
 
       <Ledger step="l5" />
     </div>
