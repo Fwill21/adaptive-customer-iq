@@ -14,6 +14,110 @@ export type Database = {
   }
   public: {
     Tables: {
+      csm_notification_rules: {
+        Row: {
+          channel: string
+          created_at: string
+          enabled: boolean
+          id: string
+          label: string
+          position: number
+          profile_id: string
+          trigger_detail: string | null
+          urgency: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          label: string
+          position?: number
+          profile_id: string
+          trigger_detail?: string | null
+          urgency?: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          label?: string
+          position?: number
+          profile_id?: string
+          trigger_detail?: string | null
+          urgency?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "csm_notification_rules_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "csm_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      csm_profiles: {
+        Row: {
+          activity_pulse: boolean
+          avatar_initials: string
+          avatar_tone: string
+          created_at: string
+          default_split: number
+          default_work_mode: string
+          email: string | null
+          focus_note: string | null
+          id: string
+          name: string
+          proactive_notifications: boolean
+          quiet_hours: string | null
+          role_title: string
+          show_demo_path: boolean
+          slug: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          activity_pulse?: boolean
+          avatar_initials?: string
+          avatar_tone?: string
+          created_at?: string
+          default_split?: number
+          default_work_mode?: string
+          email?: string | null
+          focus_note?: string | null
+          id?: string
+          name: string
+          proactive_notifications?: boolean
+          quiet_hours?: string | null
+          role_title?: string
+          show_demo_path?: boolean
+          slug: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          activity_pulse?: boolean
+          avatar_initials?: string
+          avatar_tone?: string
+          created_at?: string
+          default_split?: number
+          default_work_mode?: string
+          email?: string | null
+          focus_note?: string | null
+          id?: string
+          name?: string
+          proactive_notifications?: boolean
+          quiet_hours?: string | null
+          role_title?: string
+          show_demo_path?: boolean
+          slug?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customer_adoption_weeks: {
         Row: {
           actual: number | null
