@@ -9,6 +9,11 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
+  useAdoptionTrajectory,
+  useNorthstar,
+  useQbrStory,
+} from "@/lib/customer-record";
+import {
   ADOPTION_TRAJECTORY,
   CAUSAL_CHAIN,
   CUSTOMER_LINE,
@@ -17,7 +22,6 @@ import {
   LUX_ACTIVITY,
   MAYA_MEETING_LINE,
   NEEDS_MAYA,
-  NORTHSTAR,
   ORCHESTRATION_STAGES,
   OUTCOME_VIEW,
   PREPARED_BY_LUX,
@@ -184,6 +188,7 @@ export function MomentAttention({
   onOpenWorkspace: () => void;
 }) {
   const [opened, setOpened] = useState(false);
+  const northstar = useNorthstar();
 
   return (
     <div className="space-y-6">
@@ -202,7 +207,7 @@ export function MomentAttention({
             </p>
           </div>
           <div>
-            <p className="text-[18px] font-semibold tracking-tight">{NORTHSTAR.name}</p>
+            <p className="text-[18px] font-semibold tracking-tight">{northstar.name}</p>
             <p className="text-[14px] font-medium text-signal">{PRIORITY_SIGNAL.headline}</p>
             <p className="mt-1 text-[14px] text-muted-foreground">{PRIORITY_SIGNAL.support}</p>
           </div>
@@ -267,10 +272,11 @@ export function MomentAttention({
 /* ───────────── Moment 2 — What is really happening? ───────────── */
 
 function Trajectory() {
-  const max = 72;
+  const trajectory = useAdoptionTrajectory();
+  const max = Math.max(72, ...trajectory.map((p) => p.value));
   return (
     <div className="flex h-28 items-end gap-3">
-      {ADOPTION_TRAJECTORY.map((p) => (
+      {trajectory.map((p) => (
         <div key={p.week} className="flex flex-1 flex-col items-center gap-1.5">
           <span className="text-[11px] text-muted-foreground">{p.value}%</span>
           <div
@@ -285,6 +291,7 @@ function Trajectory() {
 }
 
 export function MomentUnderstand({ onNext }: { onNext: () => void }) {
+  const northstar = useNorthstar();
   const [evidence, setEvidence] = useState<EvidenceId | null>(null);
   const [timeline, setTimeline] = useState(false);
   const [marked, setMarked] = useState(false);
@@ -295,7 +302,7 @@ export function MomentUnderstand({ onNext }: { onNext: () => void }) {
       <CanvasHeader
         eyebrow="Northstar workspace · Outcome view"
         title="What is really happening?"
-        meta={`${NORTHSTAR.outcome} · ${NORTHSTAR.quarter}`}
+        meta={`${northstar.outcome} · ${northstar.quarter}`}
         actions={<Chip tone="positive">Objective unchanged</Chip>}
       />
 
@@ -304,9 +311,9 @@ export function MomentUnderstand({ onNext }: { onNext: () => void }) {
           <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
             Progress against outcome
           </p>
-          <p className="text-[26px] font-semibold tracking-tight">{NORTHSTAR.progress}%</p>
+          <p className="text-[26px] font-semibold tracking-tight">{northstar.progress}%</p>
           <div className="h-1.5 w-full rounded-full bg-secondary">
-            <div className="h-1.5 rounded-full bg-otto" style={{ width: `${NORTHSTAR.progress}%` }} />
+            <div className="h-1.5 rounded-full bg-otto" style={{ width: `${northstar.progress}%` }} />
           </div>
           <p className="text-[12.5px] text-muted-foreground">17% handling-time reduction of 30%</p>
         </Surface>
@@ -735,9 +742,10 @@ export function MomentDecide({ onNext }: { onNext: () => void }) {
 
 export function MomentQbr({ onNext }: { onNext: () => void }) {
   const [tab, setTab] = useState<"story" | "artifact">("story");
+  const story = useQbrStory();
   const [order, setOrder] = useState(QBR_STORY.map((s) => s.id));
   const [opening, setOpening] = useState(
-    QBR_STORY.find((s) => s.id === "progress")!.body,
+    story.find((s) => s.id === "progress")!.body,
   );
   const [editing, setEditing] = useState(false);
   const [held, setHeld] = useState<string[]>([]);
@@ -747,7 +755,7 @@ export function MomentQbr({ onNext }: { onNext: () => void }) {
   const [captured, setCaptured] = useState(false);
   const [evidence, setEvidence] = useState<EvidenceId | null>(null);
 
-  const sections = order.map((id) => QBR_STORY.find((s) => s.id === id)!);
+  const sections = order.map((id) => story.find((s) => s.id === id)!);
 
   const move = (id: string, dir: -1 | 1) =>
     setOrder((prev) => {

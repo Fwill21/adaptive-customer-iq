@@ -12,7 +12,6 @@ import { cn } from "@/lib/utils";
 import {
   ACT_LABEL,
   MAYA,
-  NORTHSTAR,
   NORTHSTAR_ALERT,
   NS_OTTO,
   NS_OTTO_TRAIL,
@@ -41,6 +40,7 @@ import {
   MomentQbr,
   MomentUnderstand,
 } from "./northstar/act2";
+import { useNorthstar } from "@/lib/customer-record";
 
 const ORDER: QimStepId[] = QIM_STEPS.map((s) => s.id);
 
@@ -71,6 +71,7 @@ export function QuarterInMotion({
   onQbrPath?: () => void;
   onSearch?: () => void;
 }) {
+  const northstar = useNorthstar();
   const [step, setStep] = useState<QimStepId>("t1");
   const [turns, setTurns] = useState<OttoTurn[]>(ottoTurn("t1"));
   const [split, setSplit] = useState(DEFAULT_SPLIT);
@@ -187,7 +188,7 @@ export function QuarterInMotion({
 
           <div className="ml-auto flex items-center gap-4">
             <p className="hidden text-[11.5px] text-muted-foreground xl:block">
-              {ACT_LABEL[meta.act]} · {NORTHSTAR.name} · {NORTHSTAR.quarter}
+              {ACT_LABEL[meta.act]} · {northstar.name} · {northstar.quarter}
             </p>
             <p
               aria-live="polite"
@@ -217,7 +218,7 @@ export function QuarterInMotion({
               style={{ width: split >= 100 ? "100%" : `${split}%`, transition: ease }}
               turns={turns}
               prompts={NS_OTTO[step].prompts}
-              contextLine={`${NORTHSTAR.name} · ${NORTHSTAR.quarter} · ${MAYA.role}`}
+              contextLine={`${northstar.name} · ${northstar.quarter} · ${MAYA.role}`}
               onAsk={ask}
               onCompose={() => setTurns(ottoTurn(step))}
             />
