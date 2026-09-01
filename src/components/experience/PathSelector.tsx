@@ -1,6 +1,7 @@
 import { PATHS, type PathId } from "@/lib/qbr-data";
 import { OttoMark } from "./primitives";
 import { ArrowRight } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export function PathSelector({ onSelect }: { onSelect: (path: PathId) => void }) {
   return (
@@ -71,7 +72,11 @@ export function PathSelector({ onSelect }: { onSelect: (path: PathId) => void })
         </div>
 
         <p className="text-center text-[13px] text-muted-foreground">
-          Three views into the same operating model. You can change demo path at any time.
+          Three views into the same operating model. You can change demo path at any time.{" "}
+          <Link to="/records" className="underline decoration-border hover:text-foreground">
+            Edit the customer records
+          </Link>{" "}
+          behind the story.
         </p>
       </div>
     </main>
