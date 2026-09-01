@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useCsmPerson, useCsmProfile } from "@/lib/csm-profile";
 import { cn } from "@/lib/utils";
 import { MOMENTS, MOMENT_STAGES } from "@/lib/story-data";
 import {
@@ -208,7 +209,7 @@ function ExperienceInner() {
     return (
       <AccountProvider account={account} profile={profile}>
         <AdaptiveExperience
-          person={{ name: "Maya Alvarez", role: "CSM · Strategic Enterprise" }}
+          person={csmPerson}
           mode={mode}
           onChangePath={() => setPath(null)}
         />
@@ -222,7 +223,7 @@ function ExperienceInner() {
       <div className="flex min-h-screen bg-background">
         <GlobalRail
           active="Home"
-          person={{ name: "Maya Alvarez", role: "CSM · Strategic Enterprise" }}
+          person={csmPerson}
           onSelect={navigateFromSelector}
         />
         <PathOtto
