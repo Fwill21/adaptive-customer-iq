@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useCsmPerson, useCsmProfile } from "@/lib/csm-profile";
 import { cn } from "@/lib/utils";
 import { MOMENTS, MOMENT_STAGES } from "@/lib/story-data";
 import {
@@ -102,6 +103,18 @@ function ExperienceInner() {
   const [role, setRole] = useState<Role>("CSM");
   // Work mode is how the person interacts. Hybrid best shows the future state.
   const [mode, setMode] = useState<ModeId>("hybrid");
+  // The CSM is a stored record: avatar, notifications and workspace defaults.
+  const csmProfile = useCsmProfile();
+  const csmPerson = useCsmPerson();
+  const appliedDefaults = useRef(false);
+  useEffect(() => {
+    if (!csmProfile || appliedDefaults.current) return;
+    appliedDefaults.current = true;
+    if ((["conversational", "hybrid", "ui"] as string[]).includes(csmProfile.defaultWorkMode))
+      setMode(csmProfile.defaultWorkMode as ModeId);
+    setShowPanel(csmProfile.showDemoPath);
+  }, [csmProfile]);
+
   // The last search Otto answered — every suggestion and custom query lands
   // its own destination and its own result payload on the page.
   const [searchResult, setSearchResult] = useState<SearchResultData | null>(null);
@@ -196,7 +209,7 @@ function ExperienceInner() {
     return (
       <AccountProvider account={account} profile={profile}>
         <AdaptiveExperience
-          person={{ name: "Maya Alvarez", role: "CSM · Strategic Enterprise" }}
+          person={csmPerson}
           mode={mode}
           onChangePath={() => setPath(null)}
         />
@@ -210,7 +223,7 @@ function ExperienceInner() {
       <div className="flex min-h-screen bg-background">
         <GlobalRail
           active="Home"
-          person={{ name: "Maya Alvarez", role: "CSM · Strategic Enterprise" }}
+          person={csmPerson}
           onSelect={navigateFromSelector}
         />
         <PathOtto
