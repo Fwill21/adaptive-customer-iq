@@ -76,8 +76,13 @@ export function PathSelector({ onSelect }: { onSelect: (path: PathId) => void })
           <Link to="/records" className="underline decoration-border hover:text-foreground">
             Edit the customer records
           </Link>{" "}
-          behind the story.
+          behind the story, or{" "}
+          <Link to="/profile" className="underline decoration-border hover:text-foreground">
+            open the CSM profile
+          </Link>{" "}
+          to set the avatar, notifications and workspace defaults.
         </p>
+
       </div>
     </main>
   );
