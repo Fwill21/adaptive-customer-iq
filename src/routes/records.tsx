@@ -106,7 +106,7 @@ function Section({
           <h2 className="text-[1.1rem] font-semibold tracking-tight">{heading}</h2>
           <p className="text-[13px] text-muted-foreground">{caption}</p>
         </div>
-        <button type="button" onClick={onAdd} className="btn-tertiary">
+        <button type="button" onClick={onAdd} className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:border-otto hover:text-otto">
           <Plus className="size-4" aria-hidden="true" />
           Add row
         </button>
@@ -274,7 +274,7 @@ function RecordsPage() {
               <span className="eyebrow">Accounts</span>
               <button
                 type="button"
-                className="btn-tertiary"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:border-otto hover:text-otto"
                 onClick={() => {
                   setSelected(null);
                   setDraft({ ...EMPTY });
