@@ -166,7 +166,7 @@ export const saveCustomerRecord = createServerFn({ method: "POST" })
       supabase.from("customer_qbr_sections").delete().eq("customer_id", id),
     ]);
 
-    const inserts: Promise<{ error: { message: string } | null }>[] = [];
+    const inserts: PromiseLike<{ error: { message: string } | null }>[] = [];
 
     if (data.metrics.length) {
       inserts.push(
