@@ -37,6 +37,10 @@ import { SearchResultPanel, Surface, TopBar } from "./shell";
 import { GlobalRail, OttoPanel, type OttoTurn } from "./lux";
 import { AdaptiveExperience } from "./AdaptiveExperience";
 import { QuarterInMotion } from "./QuarterInMotion";
+import {
+  CustomerRecordProvider,
+  useRecordAccountProfile,
+} from "@/lib/customer-record";
 import { ottoReply } from "@/lib/adaptive-data";
 import type { SearchDest, SearchResultData } from "@/lib/search-data";
 import {
@@ -82,6 +86,14 @@ const NAV_ACTIVE: Record<number, string> = {
 };
 
 export function Experience() {
+  return (
+    <CustomerRecordProvider>
+      <ExperienceInner />
+    </CustomerRecordProvider>
+  );
+}
+
+function ExperienceInner() {
   const [path, setPath] = useState<PathId | null>("adaptive");
   const [step, setStep] = useState(0);
   const [showActivity, setShowActivity] = useState(false);
@@ -95,8 +107,14 @@ export function Experience() {
   const [searchResult, setSearchResult] = useState<SearchResultData | null>(null);
   // The account in focus. Search sets it, and every stage of the path then
   // renders its metrics, evidence, owners and narrative.
-  const [account, setAccount] = useState<AccountId>("acme");
-  const profile = ACCOUNT_PROFILES[account];
+  // The real customer record is the default account in focus; search can pivot
+  // to another portfolio account.
+  const [account, setAccount] = useState<AccountId>("northstar");
+  const recordProfile = useRecordAccountProfile();
+  const profile =
+    account === "northstar"
+      ? recordProfile ?? ACCOUNT_PROFILES.northstar
+      : ACCOUNT_PROFILES[account];
 
   const applySearch = (payload: {
     dest: SearchDest;
@@ -166,7 +184,7 @@ export function Experience() {
 
   if (path === "quarter")
     return (
-      <AccountProvider account={account}>
+      <AccountProvider account={account} profile={profile}>
         <QuarterInMotion
           onChangePath={() => setPath(null)}
           onQbrPath={() => setPath("qbr")}
@@ -176,7 +194,7 @@ export function Experience() {
 
   if (path === "adaptive")
     return (
-      <AccountProvider account={account}>
+      <AccountProvider account={account} profile={profile}>
         <AdaptiveExperience
           person={{ name: "Maya Alvarez", role: "CSM · Strategic Enterprise" }}
           mode={mode}
@@ -188,7 +206,7 @@ export function Experience() {
 
   if (!path)
     return (
-      <AccountProvider account={account}>
+      <AccountProvider account={account} profile={profile}>
       <div className="flex min-h-screen bg-background">
         <GlobalRail
           active="Home"
@@ -265,7 +283,7 @@ export function Experience() {
 
 
   return (
-    <AccountProvider account={account}>
+    <AccountProvider account={account} profile={profile}>
     <div className="flex min-h-screen bg-background">
       <GlobalRail
         active="CSP"

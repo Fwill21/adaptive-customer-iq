@@ -5,7 +5,7 @@
 
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 
-export type AccountId = "acme" | "globex" | "contoso";
+export type AccountId = "acme" | "globex" | "contoso" | "northstar";
 
 export type AccountProfile = {
   id: AccountId;
@@ -259,10 +259,16 @@ const CONTOSO: AccountProfile = {
   ],
 };
 
+/* Placeholder for the real customer record: replaced at runtime by the profile
+ * built from the database record (see customer-record.tsx). Until the record
+ * loads, the Acme shape keeps layouts stable. */
+const NORTHSTAR_FALLBACK: AccountProfile = { ...ACME, id: "northstar" };
+
 export const ACCOUNT_PROFILES: Record<AccountId, AccountProfile> = {
   acme: ACME,
   globex: GLOBEX,
   contoso: CONTOSO,
+  northstar: NORTHSTAR_FALLBACK,
 };
 
 export const ACCOUNT_BY_NAME: Record<string, AccountId> = {
@@ -278,12 +284,15 @@ const AccountCtx = createContext<AccountProfile>(ACME);
 
 export function AccountProvider({
   account,
+  profile: override,
   children,
 }: {
   account: AccountId;
+  /** Profile built from the live customer record; wins when supplied. */
+  profile?: AccountProfile | null;
   children: ReactNode;
 }) {
-  const profile = ACCOUNT_PROFILES[account];
+  const profile = override ?? ACCOUNT_PROFILES[account];
   return <AccountCtx.Provider value={profile}>{children}</AccountCtx.Provider>;
 }
 

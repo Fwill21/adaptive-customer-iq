@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { LiveMeetingQa } from "./northstar/meeting-qa";
 import { cn } from "@/lib/utils";
 import { useQbrData } from "@/lib/qbr-account";
 import { personalizeData, useAccount } from "@/lib/account-context";
@@ -784,7 +785,6 @@ export function QbrMeetingMode() {
   const account = useAccount();
   const D = useQbrData();
   const drawer = useDrawer();
-  const [asked, setAsked] = useState(false);
 
   return (
     <div className="mx-auto max-w-4xl space-y-10">
@@ -838,31 +838,25 @@ export function QbrMeetingMode() {
         ))}
       </ol>
 
-      <Surface className="space-y-5">
-        <div>
-          <span className="eyebrow">Live in the room</span>
-          <p className="mt-2 text-[1.05rem] font-medium leading-snug">“{D.QBR_LIVE_QUESTION}”</p>
+      <Surface className="space-y-6">
+        <LiveMeetingQa
+          suggestions={[
+            D.QBR_LIVE_QUESTION,
+            "Why did automation usage drop this quarter?",
+            "Which open cases are blocking our next milestone?",
+            "Are we on track for the outcome we committed to?",
+          ]}
+        />
+        <div className="border-t border-border pt-6">
+          <ActionButton
+            variant="solid"
+            onClick={() => drawer.open("qbr:live", D.QBR_LIVE_OPPORTUNITY)}
+            done={drawer.isConfirmed("qbr:live")}
+            doneLabel="Added to Q4 plan"
+          >
+            Explore expansion opportunity
+          </ActionButton>
         </div>
-        {!asked ? (
-          <ActionButton onClick={() => setAsked(true)}>Ask Otto</ActionButton>
-        ) : (
-          <div className="soft-in space-y-5">
-            <div className="flex gap-3">
-              <span className="mt-0.5 shrink-0 text-otto">
-                <OttoMark size={16} />
-              </span>
-              <p className="text-[15px] leading-relaxed">{D.QBR_LIVE_ANSWER}</p>
-            </div>
-            <ActionButton
-              variant="solid"
-              onClick={() => drawer.open("qbr:live", D.QBR_LIVE_OPPORTUNITY)}
-              done={drawer.isConfirmed("qbr:live")}
-              doneLabel="Added to Q4 plan"
-            >
-              Explore opportunity
-            </ActionButton>
-          </div>
-        )}
       </Surface>
 
       <DetailDrawer
